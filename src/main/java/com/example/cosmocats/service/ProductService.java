@@ -91,13 +91,12 @@ public class ProductService {
     public void deleteProduct(UUID productId) {
         log.info("Deleting product with ID: {}", productId);
         
-        if (!productRepository.existsById(productId)) {
-            log.warn("Product not found for deletion with ID: {}", productId);
-            throw new ProductNotFoundException(productId);
+        if (productRepository.existsById(productId)) {
+            productRepository.deleteById(productId);
+            log.info("Product deleted successfully with ID: {}", productId);
+        } else {
+            log.info("Product not found for deletion with ID: {}", productId);
         }
-        
-        productRepository.deleteById(productId);
-        log.info("Product deleted successfully with ID: {}", productId);
     }
     
     public ProductListDto getProductsByCategory(String category) {
