@@ -6,12 +6,10 @@ import java.util.UUID;
 import lombok.Builder;
 import lombok.Value;
 
-
 @Value
 @Builder
-
 public class Order {
-    UUID id;
-    List<OrderEntry> entries;
-    Double totalPrice;
+  UUID id;
+  List<OrderEntry> entries;
+  Double totalPrice;
 }

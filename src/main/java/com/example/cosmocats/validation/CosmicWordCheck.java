@@ -9,18 +9,16 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-
 @Documented
 @Constraint(validatedBy = CosmicWordValidator.class)
 @Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-
 public @interface CosmicWordCheck {
-    String message() default "Product name must contain at least one cosmic term";
-    
-    Class<?>[] groups() default {};
-    
-    Class<? extends Payload>[] payload() default {};
+  String message() default "Product name must contain at least one cosmic term";
 
-    int minWords() default 1;
+  Class<?>[] groups() default {};
+
+  Class<? extends Payload>[] payload() default {};
+
+  int minWords() default 1;
 }

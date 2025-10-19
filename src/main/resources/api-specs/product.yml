@@ -8,8 +8,8 @@ paths:
   /api/v1/products:
     get:
       summary: Get all products
-      tags: 
-        - Products 
+      tags:
+        - Products
       responses:
         '200':
           description: List of all products
@@ -52,7 +52,7 @@ paths:
       requestBody:
         description: Product data to create a new product
         required: true
-        content: 
+        content:
           application/json:
             schema:
               $ref: '#/components/schemas/ProductUpdateDto'
