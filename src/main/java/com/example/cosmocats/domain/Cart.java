@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class Cart {
   UUID cartId;
   Long customerId;
