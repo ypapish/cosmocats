@@ -2,14 +2,12 @@ package com.example.cosmocats.service.mapper;
 
 import com.example.cosmocats.domain.Product;
 import com.example.cosmocats.dto.product.ProductDto;
-import com.example.cosmocats.dto.product.ProductUpdateDto;
 import com.example.cosmocats.dto.product.ProductListDto;
-
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-
+import com.example.cosmocats.dto.product.ProductUpdateDto;
 import java.util.List;
 import java.util.UUID;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface ProductMapper {

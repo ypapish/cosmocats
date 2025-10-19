@@ -1,16 +1,13 @@
 package com.example.cosmocats.dto.product;
 
 import com.example.cosmocats.validation.CosmicWordCheck;
-
-import lombok.Builder;
-import lombok.Value;
-
-import java.util.UUID;
-
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.util.UUID;
+import lombok.Builder;
+import lombok.Value;
 
 @Value
 @Builder

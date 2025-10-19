@@ -8,14 +8,11 @@ import com.example.cosmocats.exception.ProductAlreadyExistsException;
 import com.example.cosmocats.exception.ProductNotFoundException;
 import com.example.cosmocats.repository.ProductRepository;
 import com.example.cosmocats.service.mapper.ProductMapper;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
-import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service

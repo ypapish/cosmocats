@@ -1,11 +1,8 @@
 package com.example.cosmocats.dto.product;
 
-import com.example.cosmocats.dto.product.ProductListDto;
-
+import java.util.List;
 import lombok.Builder;
 import lombok.Value;
-
-import java.util.List;
 
 @Value
 @Builder

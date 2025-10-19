@@ -2,7 +2,6 @@ package com.example.cosmocats.validation;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;

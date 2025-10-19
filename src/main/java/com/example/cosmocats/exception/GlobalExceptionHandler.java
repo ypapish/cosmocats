@@ -1,99 +1,57 @@
 package com.example.cosmocats.exception;
 
-import jakarta.servlet.http.HttpServletRequest;
-
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
-
+import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import org.springframework.web.context.request.ServletWebRequest;
-import org.springframework.web.context.request.WebRequest;
+import java.time.LocalDateTime;
 
 @Slf4j
-@ControllerAdvice
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
-  @ExceptionHandler(MethodArgumentNotValidException.class)
-  @ResponseBody
-  public ResponseEntity<ErrorResponse> handleValidationExceptions(
-      MethodArgumentNotValidException ex, WebRequest request) {
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ProblemDetail handleValidationExceptions(MethodArgumentNotValidException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+        problemDetail.setTitle("Validation Error");
+        problemDetail.setProperty("timestamp", LocalDateTime.now());
 
-    String path = ((ServletWebRequest) request).getRequest().getRequestURI();
-    String errorMessage = buildValidationErrorMessage(ex);
-
-    ErrorResponse errorResponse = new ErrorResponse(400, "Bad Request", errorMessage, path);
-
-    log.warn("Validation error: {} - Path: {}", errorMessage, path);
-    return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-  }
-
-  private String buildValidationErrorMessage(MethodArgumentNotValidException ex) {
-    StringBuilder errorMessage = new StringBuilder();
-
-    String objectName = ex.getBindingResult().getObjectName();
-
-    errorMessage.append("Validation failed for object '").append(objectName).append("': ");
-
-    if (!ex.getBindingResult().getFieldErrors().isEmpty()) {
-      FieldError firstError = ex.getBindingResult().getFieldErrors().get(0);
-      errorMessage
-          .append("Field '")
-          .append(firstError.getField())
-          .append("' ")
-          .append(firstError.getDefaultMessage());
-    } else if (!ex.getBindingResult().getAllErrors().isEmpty()) {
-      errorMessage.append(ex.getBindingResult().getAllErrors().get(0).getDefaultMessage());
-    } else {
-      errorMessage.append("Validation failed");
+        log.warn("Validation error: {}", ex.getMessage());
+        return problemDetail;
     }
 
-    return errorMessage.toString();
-  }
+    @ExceptionHandler(ProductNotFoundException.class)
+    public ProblemDetail handleProductNotFound(ProductNotFoundException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
+        problemDetail.setTitle("Product Not Found");
+        problemDetail.setDetail(ex.getMessage());
+        problemDetail.setProperty("timestamp", LocalDateTime.now());
 
-  @ExceptionHandler(ProductNotFoundException.class)
-  @ResponseStatus(HttpStatus.NOT_FOUND)
-  @ResponseBody
-  public ErrorResponse handleProductNotFound(
-      ProductNotFoundException ex, HttpServletRequest request) {
+        log.info("Product not found: {}", ex.getMessage());
+        return problemDetail;
+    }
 
-    ErrorResponse errorResponse =
-        new ErrorResponse(404, "Not Found", ex.getMessage(), request.getRequestURI());
+    @ExceptionHandler(ProductAlreadyExistsException.class)
+    public ProblemDetail handleProductAlreadyExists(ProductAlreadyExistsException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.CONFLICT);
+        problemDetail.setTitle("Product Already Exists");
+        problemDetail.setDetail(ex.getMessage());
+        problemDetail.setProperty("timestamp", LocalDateTime.now());
 
-    log.info("Product not found: {} - Path: {}", ex.getMessage(), request.getRequestURI());
-    return errorResponse;
-  }
+        log.info("Product already exists: {}", ex.getMessage());
+        return problemDetail;
+    }
 
-  @ExceptionHandler(ProductAlreadyExistsException.class)
-  @ResponseStatus(HttpStatus.CONFLICT)
-  @ResponseBody
-  public ErrorResponse handleProductAlreadyExists(
-      ProductAlreadyExistsException ex, HttpServletRequest request) {
+    @ExceptionHandler(Exception.class)
+    public ProblemDetail handleGenericException(Exception ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+        problemDetail.setTitle("Internal Server Error");
+        problemDetail.setProperty("timestamp", LocalDateTime.now());
 
-    ErrorResponse errorResponse =
-        new ErrorResponse(409, "Conflict", ex.getMessage(), request.getRequestURI());
-
-    log.info("Product already exists: {} - Path: {}", ex.getMessage(), request.getRequestURI());
-    return errorResponse;
-  }
-
-  @ExceptionHandler(Exception.class)
-  @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-  @ResponseBody
-  public ErrorResponse handleGenericException(Exception ex, HttpServletRequest request) {
-
-    ErrorResponse errorResponse =
-        new ErrorResponse(
-            500, "Internal Server Error", "An unexpected error occurred", request.getRequestURI());
-
-    log.error("Internal server error: {} - Path: {}", ex.getMessage(), request.getRequestURI(), ex);
-    return errorResponse;
-  }
+        log.error("Internal server error: {}", ex.getMessage(), ex);
+        return problemDetail;
+    }
 }

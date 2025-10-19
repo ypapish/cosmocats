@@ -2,9 +2,6 @@ package com.example.cosmocats.repository;
 
 import com.example.cosmocats.domain.Product;
 import com.example.cosmocats.exception.ProductNotFoundException;
-
-import org.springframework.stereotype.Repository;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -12,6 +9,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public class ProductRepository {

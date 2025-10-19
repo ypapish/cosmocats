@@ -3,16 +3,12 @@ package com.example.cosmocats.controller;
 import com.example.cosmocats.dto.product.ProductDto;
 import com.example.cosmocats.dto.product.ProductUpdateDto;
 import com.example.cosmocats.service.ProductService;
-
 import jakarta.validation.Valid;
-
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/admin/products")

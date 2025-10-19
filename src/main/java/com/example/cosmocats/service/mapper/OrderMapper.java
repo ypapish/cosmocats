@@ -4,11 +4,9 @@ import com.example.cosmocats.domain.order.Order;
 import com.example.cosmocats.domain.order.OrderEntry;
 import com.example.cosmocats.dto.order.OrderDto;
 import com.example.cosmocats.dto.order.OrderEntryDto;
-
+import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-
-import java.util.List;
 
 @Mapper(
     componentModel = "spring",

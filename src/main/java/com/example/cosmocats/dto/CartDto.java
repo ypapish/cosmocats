@@ -1,12 +1,12 @@
 package com.example.cosmocats.dto;
 
 import com.example.cosmocats.dto.product.ProductDto;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 import java.util.List;
 import java.util.UUID;
 import lombok.Builder;
 import lombok.Value;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
 
 @Value
 @Builder

@@ -1,12 +1,10 @@
 package com.example.cosmocats.dto.order;
 
-import lombok.Builder;
-import lombok.Value;
-
 import com.example.cosmocats.dto.product.ProductDto;
-
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.PositiveOrZero;
+import lombok.Builder;
+import lombok.Value;
 
 @Value
 @Builder
