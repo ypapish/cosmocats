@@ -231,7 +231,7 @@ class ProductServiceTest {
 
         when(productRepository.existsById(productId)).thenReturn(true);
         when(productRepository.findById(productId)).thenReturn(Optional.of(existingProduct));
-        when(productRepository.existsByNameExcludingId("Updated Quantum Phone", productId)).thenReturn(false);
+        when(productRepository.existsByName("Updated Quantum Phone")).thenReturn(false);
         when(productMapper.toProductWithId(eq(productId), any(ProductUpdateDto.class))).thenReturn(updatedProduct);
         when(productRepository.save(any(Product.class))).thenReturn(updatedProduct);
         when(productMapper.toProductDto(updatedProduct)).thenReturn(updatedProductDto);
@@ -248,7 +248,7 @@ class ProductServiceTest {
         
         verify(productRepository).existsById(productId);
         verify(productRepository).findById(productId);
-        verify(productRepository).existsByNameExcludingId("Updated Quantum Phone", productId);
+        verify(productRepository).existsByName("Updated Quantum Phone");
         verify(productRepository).save(updatedProduct);
         verify(productMapper).toProductDto(updatedProduct);
     }
@@ -281,7 +281,7 @@ class ProductServiceTest {
 
         when(productRepository.existsById(productId)).thenReturn(true);
         when(productRepository.findById(productId)).thenReturn(Optional.of(existingProduct));
-        when(productRepository.existsByNameExcludingId("Quantum Phone X1", productId)).thenReturn(true);
+        when(productRepository.existsByName("Quantum Phone X1")).thenReturn(true);
 
         // Act & Assert
         assertThatThrownBy(() -> productService.updateProduct(productId, productUpdateDto))
@@ -289,6 +289,58 @@ class ProductServiceTest {
                 .hasMessageContaining("Product already exists with name: Quantum Phone X1");
         
         verify(productRepository, never()).save(any(Product.class));
+    }
+
+    @Test
+    @DisplayName("Should not throw exception when updating product with same name")
+    void updateProduct_ShouldNotThrowException_WhenUpdatingWithSameName() {
+        // Arrange
+        Product existingProduct = Product.builder()
+                .productId(productId)
+                .category("Electronics")
+                .name("Quantum Phone X1") // Та сама назва
+                .description("Existing description")
+                .price(799.99f)
+                .build();
+
+        Product updatedProduct = product.toBuilder()
+                .name("Quantum Phone X1") // Та сама назва
+                .description("Updated description")
+                .price(899.99f)
+                .build();
+        
+        ProductDto updatedProductDto = productDto.toBuilder()
+                .name("Quantum Phone X1")
+                .description("Updated description")
+                .price(899.99f)
+                .build();
+        
+        ProductUpdateDto updateDto = ProductUpdateDto.builder()
+                .category("Electronics")
+                .name("Quantum Phone X1") // Та сама назва
+                .description("Updated description")
+                .price(899.99f)
+                .build();
+
+        when(productRepository.existsById(productId)).thenReturn(true);
+        when(productRepository.findById(productId)).thenReturn(Optional.of(existingProduct));
+        // existsByName не викликається коли назва та сама
+        when(productMapper.toProductWithId(eq(productId), any(ProductUpdateDto.class))).thenReturn(updatedProduct);
+        when(productRepository.save(any(Product.class))).thenReturn(updatedProduct);
+        when(productMapper.toProductDto(updatedProduct)).thenReturn(updatedProductDto);
+
+        // Act & Assert
+        org.junit.jupiter.api.Assertions.assertDoesNotThrow(() -> {
+            ProductDto result = productService.updateProduct(productId, updateDto);
+            assertThat(result).isNotNull();
+            assertThat(result.getName()).isEqualTo("Quantum Phone X1");
+        });
+
+        verify(productRepository).existsById(productId);
+        verify(productRepository).findById(productId);
+        verify(productRepository, never()).existsByName(anyString()); // Не викликається коли назва та сама
+        verify(productRepository).save(updatedProduct);
+        verify(productMapper).toProductDto(updatedProduct);
     }
 
     @Test

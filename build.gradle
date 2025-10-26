@@ -16,12 +16,10 @@ java {
 }
 
 ext {
-    minimumCoveragePerFile = 0.8
+    minimumCoververagePerFile = 0.8
     filesExcludedFromCoverage = [
         "**/CosmocatsApplication.*",
-        "**/config/*.*", 
-        "**/service/mapper/*.*",
-        "**/validation/*.*"
+        "**/config/*.*"
     ]
 }
 
