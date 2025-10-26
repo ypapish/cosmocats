@@ -21,6 +21,7 @@ ext {
         '**/mapper/**',
         '**/exception/**',
         '**/validation/**',
+        '**/repository/*Repository*',
         '**/CosmocatsApplication*'
     ]
 }
