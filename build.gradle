@@ -19,7 +19,6 @@ ext {
     minimumCoveragePerFile = 0.8
     filesExcludedFromCoverage = [
         '**/mapper/**',
-        '**/repository/*Repository*', 
         '**/validation/**',
         '**/CosmocatsApplication*'
     ]
