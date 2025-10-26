@@ -16,9 +16,12 @@ java {
 }
 
 ext {
-    // Minimal Coverage
     minimumCoveragePerFile = 0.8
-    filesExcludedFromCoverage = []
+    filesExcludedFromCoverage = [
+        "**/CosmocatsApplication.*",
+        "**/config/*.*"
+        // ВИДАЛИТИ: "**/validation/*.*" - бо валідація тестується!
+    ]
 }
 
 configurations {
@@ -56,10 +59,4 @@ dependencies {
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.34'
     testAnnotationProcessor 'org.mapstruct:mapstruct-processor:1.6.2'
     testImplementation 'org.projectlombok:lombok:1.18.34'
-}
-
-test {
-    useJUnitPlatform()  // обов'язково для JUnit5
-    maxParallelForks = 1
-    forkEvery = 0
 }

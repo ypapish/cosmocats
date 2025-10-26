@@ -17,10 +17,10 @@ jacocoTestCoverageVerification {
             enabled = true
             failOnViolation = true
             element = 'SOURCEFILE'
-            //excludes = filesExcludedFromCoverage
+            excludes = filesExcludedFromCoverage
             limit {
                 counter = 'LINE'
-                //minimum = minimumCoveragePerFile
+                minimum = minimumCoveragePerFile
             }
         }
     }
@@ -46,7 +46,7 @@ jacocoTestReport {
     finalizedBy jacocoTestCoverageVerification
 }
 
-/*tasks.register('jacocoIntegrationTestReport', JacocoReport) {
+tasks.register('jacocoIntegrationTestReport', JacocoReport) {
     dependsOn integrationTest
     group = "Reporting"
     description = "Creates the result report of the (Thin) Integration Test"
@@ -60,22 +60,22 @@ jacocoTestReport {
         html.outputLocation = layout.buildDirectory.dir("reports/coverage")
         csv.outputLocation = layout.buildDirectory.file("reports/coverage/coverageIT.csv").get().asFile
     }
-}*/
+}
 
-/*test {
+test {
     filter {
         excludeTestsMatching '*IT'
     }
     finalizedBy jacocoTestReport // report is always generated after tests run
-}*/
+}
 
-/*integrationTest {
+integrationTest {
     maxParallelForks = 4
     filter {
         includeTestsMatching '*IT'
     }
     finalizedBy tasks.jacocoIntegrationTestReport // report is always generated after tests run
-}*/
+}
 
 jacocoTestCoverageVerification.dependsOn jacocoTestReport
-//test.dependsOn jacocoIntegrationTestReport
+test.dependsOn jacocoIntegrationTestReport
