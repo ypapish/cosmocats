@@ -202,6 +202,14 @@ class ProductServiceTest {
     @DisplayName("Should update product when product exists and name is unique")
     void updateProduct_ShouldReturnUpdatedProductDto_WhenProductExistsAndNameIsUnique() {
         // Arrange
+        Product existingProduct = Product.builder()
+                .productId(productId)
+                .category("Electronics")
+                .name("Old Product Name")
+                .description("Old description")
+                .price(799.99f)
+                .build();
+
         Product updatedProduct = product.toBuilder()
                 .name("Updated Quantum Phone")
                 .description("Updated description with cosmic features")
@@ -222,8 +230,8 @@ class ProductServiceTest {
                 .build();
 
         when(productRepository.existsById(productId)).thenReturn(true);
-        when(productRepository.findById(productId)).thenReturn(Optional.of(product));
-        when(productRepository.existsByName(anyString())).thenReturn(false);
+        when(productRepository.findById(productId)).thenReturn(Optional.of(existingProduct));
+        when(productRepository.existsByNameExcludingId("Updated Quantum Phone", productId)).thenReturn(false);
         when(productMapper.toProductWithId(eq(productId), any(ProductUpdateDto.class))).thenReturn(updatedProduct);
         when(productRepository.save(any(Product.class))).thenReturn(updatedProduct);
         when(productMapper.toProductDto(updatedProduct)).thenReturn(updatedProductDto);
@@ -240,7 +248,7 @@ class ProductServiceTest {
         
         verify(productRepository).existsById(productId);
         verify(productRepository).findById(productId);
-        verify(productRepository).existsByName("Updated Quantum Phone");
+        verify(productRepository).existsByNameExcludingId("Updated Quantum Phone", productId);
         verify(productRepository).save(updatedProduct);
         verify(productMapper).toProductDto(updatedProduct);
     }
@@ -263,9 +271,17 @@ class ProductServiceTest {
     @DisplayName("Should throw exception when product name already exists during update")
     void updateProduct_ShouldThrowException_WhenProductNameAlreadyExists() {
         // Arrange
+        Product existingProduct = Product.builder()
+                .productId(productId)
+                .category("Electronics")
+                .name("Existing Product")
+                .description("Existing description")
+                .price(799.99f)
+                .build();
+
         when(productRepository.existsById(productId)).thenReturn(true);
-        when(productRepository.findById(productId)).thenReturn(Optional.of(product));
-        when(productRepository.existsByName(anyString())).thenReturn(true);
+        when(productRepository.findById(productId)).thenReturn(Optional.of(existingProduct));
+        when(productRepository.existsByNameExcludingId("Quantum Phone X1", productId)).thenReturn(true);
 
         // Act & Assert
         assertThatThrownBy(() -> productService.updateProduct(productId, productUpdateDto))
