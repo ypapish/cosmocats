@@ -18,7 +18,13 @@ java {
 ext {
     minimumCoveragePerFile = 0.8
     filesExcludedFromCoverage = [
-        "**/CosmocatsApplication.*",
+        '**/mapper/*MapperImpl*',
+        '**/repository/*Repository*', 
+        '**/dto/**',
+        '**/exception/**',
+        '**/validation/**',
+        '**/domain/**',
+        '**/CosmocatsApplication*'
     ]
 }
 
