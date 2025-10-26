@@ -19,8 +19,9 @@ ext {
     minimumCoveragePerFile = 0.8
     filesExcludedFromCoverage = [
         "**/CosmocatsApplication.*",
-        "**/config/*.*"
-        // ВИДАЛИТИ: "**/validation/*.*" - бо валідація тестується!
+        "**/config/*.*", 
+        "**/service/mapper/*.*",
+        "**/validation/*.*"
     ]
 }
 

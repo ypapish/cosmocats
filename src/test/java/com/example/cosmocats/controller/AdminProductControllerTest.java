@@ -316,13 +316,13 @@ class AdminProductControllerTest {
         // Arrange
         ProductUpdateDto updateDto = ProductUpdateDto.builder()
                 .category("Electronics")
-                .name("Existing Product")
+                .name("Existing Galaxy Product")  // Використовуємо космічне слово
                 .description("Updated description")
                 .price(899.99f)
                 .build();
 
         when(productService.updateProduct(eq(productId), any(ProductUpdateDto.class)))
-                .thenThrow(new ProductAlreadyExistsException("Existing Product"));
+                .thenThrow(new ProductAlreadyExistsException("Existing Galaxy Product"));
 
         // Act & Assert
         mockMvc.perform(put("/api/v1/admin/products/{id}", productId)

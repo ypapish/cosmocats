@@ -171,7 +171,8 @@ class ProductControllerTest {
 
         // Act & Assert
         mockMvc.perform(get("/api/v1/products/{id}", invalidUuid))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.title").value("Invalid Parameter"));
     }
 
     @Test
