@@ -1,4 +1,3 @@
-// AbstractIt.java
 package com.example.cosmocats;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
