@@ -16,7 +16,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Set up JDK 17 (you can change to another version if needed)
+      # Set up JDK 21 (you can change to another version if needed)
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
@@ -37,9 +37,12 @@ jobs:
       - name: Grant execute permission for Gradlew
         run: chmod +x ./gradlew
 
-      - name: Run tests and generate coverage
-        run: ./gradlew clean test jacocoTestReport
-
+      # Run Gradle build and tests with coverage
+      - name: Build with Gradle
+        uses: gradle/gradle-build-action@v3
+        with:
+          cache-disabled: true
+          generate-job-summary: false
 
       # Upload the JaCoCo test coverage report
       - name: Upload coverage report
