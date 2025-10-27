@@ -23,17 +23,16 @@ public abstract class AbstractIt {
     @DynamicPropertySource
     static void setupTestContainerProperties(DynamicPropertyRegistry registry) {
         registry.add("application.inventory-service.base-url", wireMockServer::baseUrl);
+        registry.add("application.pricing-service.base-url", wireMockServer::baseUrl);
         WireMock.configureFor(wireMockServer.getPort());
     }
 
-    // Додаткові методи для зручного stubbing
+    // Спрощені методи для stubbing - без зайвих деталей
     protected void stubInventoryCheck(UUID productId, boolean inStock, int quantity) {
         wireMockServer.stubFor(
-            com.github.tomakehurst.wiremock.client.WireMock.get(
-                com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo("/api/inventory/" + productId)
-            )
+            WireMock.get(WireMock.urlEqualTo("/api/inventory/" + productId))
             .willReturn(
-                com.github.tomakehurst.wiremock.client.WireMock.aResponse()
+                WireMock.aResponse()
                     .withStatus(200)
                     .withHeader("Content-Type", "application/json")
                     .withBody(String.format(
@@ -46,42 +45,33 @@ public abstract class AbstractIt {
 
     protected void stubInventoryCheckError(UUID productId) {
         wireMockServer.stubFor(
-            com.github.tomakehurst.wiremock.client.WireMock.get(
-                com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo("/api/inventory/" + productId)
-            )
+            WireMock.get(WireMock.urlEqualTo("/api/inventory/" + productId))
             .willReturn(
-                com.github.tomakehurst.wiremock.client.WireMock.aResponse()
+                WireMock.aResponse()
                     .withStatus(500)
                     .withHeader("Content-Type", "application/json")
-                    .withBody("{\"error\":\"Internal server error\"}")
+                    .withBody("{\"error\":\"Service unavailable\"}")
             )
         );
     }
 
-    protected void stubPriceCalculation(UUID productId, float originalPrice, float discountedPrice) {
+    protected void stubPriceCalculation(UUID productId, double originalPrice, double discountedPrice) {
         wireMockServer.stubFor(
-            com.github.tomakehurst.wiremock.client.WireMock.post(
-                com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo("/api/pricing/calculate")
-            )
+            WireMock.post(WireMock.urlEqualTo("/api/pricing/calculate"))
             .withRequestBody(
-                com.github.tomakehurst.wiremock.client.WireMock.equalToJson(
+                WireMock.equalToJson(
                     String.format("{\"productId\":\"%s\",\"originalPrice\":%.2f}", productId, originalPrice)
                 )
             )
             .willReturn(
-                com.github.tomakehurst.wiremock.client.WireMock.aResponse()
+                WireMock.aResponse()
                     .withStatus(200)
                     .withHeader("Content-Type", "application/json")
                     .withBody(String.format(
-                        "{\"productId\":\"%s\",\"originalPrice\":%.2f,\"discountedPrice\":%.2f,\"discountApplied\":%.2f}",
-                        productId, originalPrice, discountedPrice, originalPrice - discountedPrice
+                        "{\"productId\":\"%s\",\"originalPrice\":%.2f,\"discountedPrice\":%.2f}",
+                        productId, originalPrice, discountedPrice
                     ))
             )
         );
-    }
-
-    // Додатковий метод для прямого доступу до wireMockServer
-    protected WireMockExtension getWireMockServer() {
-        return wireMockServer;
     }
 }
