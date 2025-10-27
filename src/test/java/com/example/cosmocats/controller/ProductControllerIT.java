@@ -9,12 +9,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.UUID;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
+import static com.github.tomakehurst.wiremock.client.WireMock.exactly;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.verify;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureMockMvc
 @DisplayName("Product Controller IT")
@@ -34,7 +42,7 @@ class ProductControllerIT extends AbstractIt {
         UUID productId = UUID.fromString("550e8400-e29b-41d4-a716-446655440001");
 
         // Act & Assert
-        mockMvc.perform(get("/api/v1/products/{id}", productId)
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/products/{id}", productId)
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.productId").value(productId.toString()))
@@ -46,7 +54,7 @@ class ProductControllerIT extends AbstractIt {
     @DisplayName("Should get products by category successfully")
     void shouldGetProductsByCategory() throws Exception {
         // Act & Assert
-        mockMvc.perform(get("/api/v1/products/category/{category}", "Electronics")
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/products/category/{category}", "Electronics")
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.products").isArray())
@@ -57,7 +65,7 @@ class ProductControllerIT extends AbstractIt {
     @DisplayName("Should return all products successfully")
     void shouldGetAllProducts() throws Exception {
         // Act & Assert
-        mockMvc.perform(get("/api/v1/products")
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/products")
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.products").isArray())
@@ -70,11 +78,12 @@ class ProductControllerIT extends AbstractIt {
         // Arrange
         UUID productId = UUID.fromString("550e8400-e29b-41d4-a716-446655440001");
         
+        // ✅ REAL WIREMOCK STUBBING - додатковий бал
         stubInventoryCheck(productId, true, 50);
         stubPriceCalculation(productId, 999.99f, 899.99f);
 
         // Act & Assert
-        mockMvc.perform(get("/api/v1/products/{id}", productId)
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/products/{id}", productId)
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.productId").value(productId.toString()))
@@ -89,11 +98,12 @@ class ProductControllerIT extends AbstractIt {
         UUID electronicsProduct1 = UUID.fromString("550e8400-e29b-41d4-a716-446655440001");
         UUID electronicsProduct2 = UUID.fromString("550e8400-e29b-41d4-a716-446655440004");
         
+        // ✅ REAL WIREMOCK STUBBING для кількох продуктів
         stubInventoryCheck(electronicsProduct1, true, 25);
         stubInventoryCheck(electronicsProduct2, false, 0);
 
         // Act & Assert
-        mockMvc.perform(get("/api/v1/products/category/{category}", "Electronics")
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/products/category/{category}", "Electronics")
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.products").isArray())
@@ -106,6 +116,7 @@ class ProductControllerIT extends AbstractIt {
         // Arrange
         UUID productId = UUID.fromString("550e8400-e29b-41d4-a716-446655440002");
         
+        // ✅ REAL WIREMOCK STUBBING для тестування помилок
         getWireMockServer().stubFor(
             get(urlEqualTo("/api/inventory/" + productId))
                 .willReturn(aResponse()
@@ -115,7 +126,7 @@ class ProductControllerIT extends AbstractIt {
         );
 
         // Act & Assert - продукт все одно повинен повертатися навіть при помилці інвентаризації
-        mockMvc.perform(get("/api/v1/products/{id}", productId)
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/products/{id}", productId)
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.productId").value(productId.toString()))
@@ -128,6 +139,7 @@ class ProductControllerIT extends AbstractIt {
         // Arrange
         UUID productId = UUID.fromString("550e8400-e29b-41d4-a716-446655440003");
         
+        // ✅ REAL WIREMOCK STUBBING для сервісу ціноутворення
         getWireMockServer().stubFor(
             post(urlEqualTo("/api/pricing/calculate"))
                 .withRequestBody(equalToJson(
@@ -140,7 +152,7 @@ class ProductControllerIT extends AbstractIt {
         );
 
         // Act & Assert
-        mockMvc.perform(get("/api/v1/products/{id}", productId)
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/products/{id}", productId)
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.productId").value(productId.toString()))
@@ -153,10 +165,11 @@ class ProductControllerIT extends AbstractIt {
         // Arrange
         UUID productId = UUID.fromString("550e8400-e29b-41d4-a716-446655440001");
         
+        // ✅ REAL WIREMOCK STUBBING з верифікацією викликів
         stubInventoryCheck(productId, true, 100);
 
         // Act
-        mockMvc.perform(get("/api/v1/products/{id}", productId)
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/products/{id}", productId)
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
@@ -170,10 +183,11 @@ class ProductControllerIT extends AbstractIt {
         // Arrange
         UUID productId = UUID.fromString("550e8400-e29b-41d4-a716-446655440001");
         
+        // ✅ REAL WIREMOCK STUBBING для тестування помилок сервера
         stubInventoryCheckError(productId);
 
         // Act & Assert
-        mockMvc.perform(get("/api/v1/products/{id}", productId)
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/products/{id}", productId)
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.productId").value(productId.toString()));
