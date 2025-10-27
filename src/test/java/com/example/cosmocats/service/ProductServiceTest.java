@@ -23,6 +23,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -80,16 +81,13 @@ class ProductServiceTest {
     @Test
     @DisplayName("Should create product when product does not exist")
     void createProduct_ShouldReturnProductDto_WhenProductDoesNotExist() {
-        // Arrange
         when(productRepository.existsByName(anyString())).thenReturn(false);
         when(productMapper.toProduct(any(ProductUpdateDto.class))).thenReturn(product);
         when(productRepository.save(any(Product.class))).thenReturn(product);
         when(productMapper.toProductDto(any(Product.class))).thenReturn(productDto);
 
-        // Act
         ProductDto result = productService.createProduct(productUpdateDto);
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result.getProductId()).isEqualTo(productId);
         assertThat(result.getName()).isEqualTo("Quantum Phone X1");
@@ -105,10 +103,8 @@ class ProductServiceTest {
     @Test
     @DisplayName("Should throw exception when product already exists")
     void createProduct_ShouldThrowException_WhenProductAlreadyExists() {
-        // Arrange
         when(productRepository.existsByName(anyString())).thenReturn(true);
 
-        // Act & Assert
         assertThatThrownBy(() -> productService.createProduct(productUpdateDto))
                 .isInstanceOf(ProductAlreadyExistsException.class)
                 .hasMessageContaining("Product already exists with name: Quantum Phone X1");
@@ -119,14 +115,11 @@ class ProductServiceTest {
     @Test
     @DisplayName("Should return product by ID when product exists")
     void getProductById_ShouldReturnProductDto_WhenProductExists() {
-        // Arrange
         when(productRepository.findById(productId)).thenReturn(Optional.of(product));
         when(productMapper.toProductDto(any(Product.class))).thenReturn(productDto);
 
-        // Act
         ProductDto result = productService.getProductById(productId);
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result.getProductId()).isEqualTo(productId);
         assertThat(result.getName()).isEqualTo("Quantum Phone X1");
@@ -141,10 +134,8 @@ class ProductServiceTest {
     @Test
     @DisplayName("Should throw exception when product not found by ID")
     void getProductById_ShouldThrowException_WhenProductNotFound() {
-        // Arrange
         when(productRepository.findById(productId)).thenReturn(Optional.empty());
 
-        // Act & Assert
         assertThatThrownBy(() -> productService.getProductById(productId))
                 .isInstanceOf(ProductNotFoundException.class)
                 .hasMessageContaining("Product not found with id: " + productId);
@@ -156,7 +147,6 @@ class ProductServiceTest {
     @Test
     @DisplayName("Should return all products when products exist")
     void getAllProducts_ShouldReturnProductListDto_WhenProductsExist() {
-        // Arrange
         List<Product> products = Arrays.asList(product);
         ProductListDto productListDto = ProductListDto.builder()
                 .products(Arrays.asList(productDto))
@@ -165,10 +155,8 @@ class ProductServiceTest {
         when(productRepository.findAll()).thenReturn(products);
         when(productMapper.toProductListDto(products)).thenReturn(productListDto);
 
-        // Act
         ProductListDto result = productService.getAllProducts();
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result.getProducts()).hasSize(1);
         assertThat(result.getProducts().get(0).getProductId()).isEqualTo(productId);
@@ -182,7 +170,6 @@ class ProductServiceTest {
     @Test
     @DisplayName("Should return empty list when no products exist")
     void getAllProducts_ShouldReturnEmptyList_WhenNoProductsExist() {
-        // Arrange
         List<Product> emptyProducts = List.of();
         ProductListDto emptyProductListDto = ProductListDto.builder()
                 .products(List.of())
@@ -191,10 +178,8 @@ class ProductServiceTest {
         when(productRepository.findAll()).thenReturn(emptyProducts);
         when(productMapper.toProductListDto(emptyProducts)).thenReturn(emptyProductListDto);
 
-        // Act
         ProductListDto result = productService.getAllProducts();
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result.getProducts()).isEmpty();
         
@@ -205,7 +190,6 @@ class ProductServiceTest {
     @Test
     @DisplayName("Should update product when product exists and name is unique")
     void updateProduct_ShouldReturnUpdatedProductDto_WhenProductExistsAndNameIsUnique() {
-        // Arrange
         Product existingProduct = Product.builder()
                 .productId(productId)
                 .category("Electronics")
@@ -240,10 +224,8 @@ class ProductServiceTest {
         when(productRepository.save(any(Product.class))).thenReturn(updatedProduct);
         when(productMapper.toProductDto(updatedProduct)).thenReturn(updatedProductDto);
 
-        // Act
         ProductDto result = productService.updateProduct(productId, updateDto);
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result.getName()).isEqualTo("Updated Quantum Phone");
         assertThat(result.getDescription()).isEqualTo("Updated description with cosmic features");
@@ -260,10 +242,8 @@ class ProductServiceTest {
     @Test
     @DisplayName("Should throw exception when updating non-existent product")
     void updateProduct_ShouldThrowException_WhenProductNotFound() {
-        // Arrange
         when(productRepository.existsById(productId)).thenReturn(false);
 
-        // Act & Assert
         assertThatThrownBy(() -> productService.updateProduct(productId, productUpdateDto))
                 .isInstanceOf(ProductNotFoundException.class)
                 .hasMessageContaining("Product not found with id: " + productId);
@@ -274,7 +254,6 @@ class ProductServiceTest {
     @Test
     @DisplayName("Should throw exception when product name already exists during update")
     void updateProduct_ShouldThrowException_WhenProductNameAlreadyExists() {
-        // Arrange
         Product existingProduct = Product.builder()
                 .productId(productId)
                 .category("Electronics")
@@ -287,7 +266,6 @@ class ProductServiceTest {
         when(productRepository.findById(productId)).thenReturn(Optional.of(existingProduct));
         when(productRepository.existsByName("Quantum Phone X1")).thenReturn(true);
 
-        // Act & Assert
         assertThatThrownBy(() -> productService.updateProduct(productId, productUpdateDto))
                 .isInstanceOf(ProductAlreadyExistsException.class)
                 .hasMessageContaining("Product already exists with name: Quantum Phone X1");
@@ -298,17 +276,16 @@ class ProductServiceTest {
     @Test
     @DisplayName("Should not throw exception when updating product with same name")
     void updateProduct_ShouldNotThrowException_WhenUpdatingWithSameName() {
-        // Arrange
         Product existingProduct = Product.builder()
                 .productId(productId)
                 .category("Electronics")
-                .name("Quantum Phone X1") // Та сама назва
+                .name("Quantum Phone X1")
                 .description("Existing description")
                 .price(799.99f)
                 .build();
 
         Product updatedProduct = product.toBuilder()
-                .name("Quantum Phone X1") // Та сама назва
+                .name("Quantum Phone X1")
                 .description("Updated description")
                 .price(899.99f)
                 .build();
@@ -321,20 +298,18 @@ class ProductServiceTest {
         
         ProductUpdateDto updateDto = ProductUpdateDto.builder()
                 .category("Electronics")
-                .name("Quantum Phone X1") // Та сама назва
+                .name("Quantum Phone X1")
                 .description("Updated description")
                 .price(899.99f)
                 .build();
 
         when(productRepository.existsById(productId)).thenReturn(true);
         when(productRepository.findById(productId)).thenReturn(Optional.of(existingProduct));
-        // existsByName не викликається коли назва та сама
         when(productMapper.toProductWithId(eq(productId), any(ProductUpdateDto.class))).thenReturn(updatedProduct);
         when(productRepository.save(any(Product.class))).thenReturn(updatedProduct);
         when(productMapper.toProductDto(updatedProduct)).thenReturn(updatedProductDto);
 
-        // Act & Assert
-        org.junit.jupiter.api.Assertions.assertDoesNotThrow(() -> {
+        assertDoesNotThrow(() -> {
             ProductDto result = productService.updateProduct(productId, updateDto);
             assertThat(result).isNotNull();
             assertThat(result.getName()).isEqualTo("Quantum Phone X1");
@@ -342,7 +317,7 @@ class ProductServiceTest {
 
         verify(productRepository).existsById(productId);
         verify(productRepository).findById(productId);
-        verify(productRepository, never()).existsByName(anyString()); // Не викликається коли назва та сама
+        verify(productRepository, never()).existsByName(anyString());
         verify(productRepository).save(updatedProduct);
         verify(productMapper).toProductDto(updatedProduct);
     }
@@ -350,14 +325,11 @@ class ProductServiceTest {
     @Test
     @DisplayName("Should delete product when product exists")
     void deleteProduct_ShouldDeleteProduct_WhenProductExists() {
-        // Arrange
         when(productRepository.existsById(productId)).thenReturn(true);
         doNothing().when(productRepository).deleteById(productId);
 
-        // Act
         productService.deleteProduct(productId);
 
-        // Assert
         verify(productRepository).existsById(productId);
         verify(productRepository).deleteById(productId);
     }
@@ -365,13 +337,10 @@ class ProductServiceTest {
     @Test
     @DisplayName("Should handle deleting non-existent product gracefully")
     void deleteProduct_ShouldNotThrowException_WhenProductDoesNotExist() {
-        // Arrange
         when(productRepository.existsById(productId)).thenReturn(false);
 
-        // Act & Assert
-        org.junit.jupiter.api.Assertions.assertDoesNotThrow(() -> productService.deleteProduct(productId));
+        assertDoesNotThrow(() -> productService.deleteProduct(productId));
 
-        // Assert
         verify(productRepository).existsById(productId);
         verify(productRepository, never()).deleteById(productId);
     }
@@ -379,7 +348,6 @@ class ProductServiceTest {
     @Test
     @DisplayName("Should return filtered products by category")
     void getProductsByCategory_ShouldReturnFilteredProducts_WhenCategoryExists() {
-        // Arrange
         Product product2 = Product.builder()
                 .productId(UUID.fromString("550e8400-e29b-41d4-a716-446655440002"))
                 .category("Books")
@@ -398,10 +366,8 @@ class ProductServiceTest {
         when(productRepository.findAll()).thenReturn(allProducts);
         when(productMapper.toProductListDto(electronicsProducts)).thenReturn(electronicsProductListDto);
 
-        // Act
         ProductListDto result = productService.getProductsByCategory("Electronics");
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result.getProducts()).hasSize(1);
         assertThat(result.getProducts().get(0).getCategory()).isEqualTo("Electronics");
@@ -415,7 +381,6 @@ class ProductServiceTest {
     @Test
     @DisplayName("Should return empty list when no products in category")
     void getProductsByCategory_ShouldReturnEmptyList_WhenNoProductsInCategory() {
-        // Arrange
         List<Product> allProducts = Arrays.asList(product);
         List<Product> emptyProducts = List.of();
         
@@ -426,10 +391,8 @@ class ProductServiceTest {
         when(productRepository.findAll()).thenReturn(allProducts);
         when(productMapper.toProductListDto(emptyProducts)).thenReturn(emptyProductListDto);
 
-        // Act
         ProductListDto result = productService.getProductsByCategory("NonExistentCategory");
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result.getProducts()).isEmpty();
         
@@ -440,7 +403,6 @@ class ProductServiceTest {
     @Test
     @DisplayName("Should handle case insensitive category filtering")
     void getProductsByCategory_ShouldBeCaseInsensitive() {
-        // Arrange
         List<Product> allProducts = Arrays.asList(product);
         List<Product> electronicsProducts = List.of(product);
         
@@ -451,10 +413,8 @@ class ProductServiceTest {
         when(productRepository.findAll()).thenReturn(allProducts);
         when(productMapper.toProductListDto(electronicsProducts)).thenReturn(electronicsProductListDto);
 
-        // Act
         ProductListDto result = productService.getProductsByCategory("electronics");
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result.getProducts()).hasSize(1);
         assertThat(result.getProducts().get(0).getCategory()).isEqualTo("Electronics");

@@ -35,7 +35,6 @@ class ProductControllerTest {
     @Test
     @DisplayName("Should return all products when products exist")
     void getAllProducts_ShouldReturnProducts_WhenProductsExist() throws Exception {
-        // Arrange
         ProductDto product1 = ProductDto.builder()
                 .productId(productId)
                 .category("Electronics")
@@ -57,7 +56,6 @@ class ProductControllerTest {
 
         when(productService.getAllProducts()).thenReturn(productListDto);
 
-        // Act & Assert
         mockMvc.perform(get("/api/v1/products"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.products.length()").value(2))
@@ -74,11 +72,9 @@ class ProductControllerTest {
     @Test
     @DisplayName("Should return empty list when no products exist")
     void getAllProducts_ShouldReturnEmptyList_WhenNoProductsExist() throws Exception {
-        // Arrange
         ProductListDto emptyListDto = ProductListDto.builder().products(List.of()).build();
         when(productService.getAllProducts()).thenReturn(emptyListDto);
 
-        // Act & Assert
         mockMvc.perform(get("/api/v1/products"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.products.length()").value(0));
@@ -87,7 +83,6 @@ class ProductControllerTest {
     @Test
     @DisplayName("Should return product by ID when product exists")
     void getProductById_ShouldReturnProduct_WhenProductExists() throws Exception {
-        // Arrange
         ProductDto productDto = ProductDto.builder()
                 .productId(productId)
                 .category("Electronics")
@@ -98,7 +93,6 @@ class ProductControllerTest {
 
         when(productService.getProductById(productId)).thenReturn(productDto);
 
-        // Act & Assert
         mockMvc.perform(get("/api/v1/products/{id}", productId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.productId").value(productId.toString()))
@@ -111,7 +105,6 @@ class ProductControllerTest {
     @Test
     @DisplayName("Should return filtered products by category")
     void getProductsByCategory_ShouldReturnFilteredProducts() throws Exception {
-        // Arrange
         ProductDto electronicsProduct = ProductDto.builder()
                 .productId(productId)
                 .category("Electronics")
@@ -125,7 +118,6 @@ class ProductControllerTest {
 
         when(productService.getProductsByCategory("Electronics")).thenReturn(productListDto);
 
-        // Act & Assert
         mockMvc.perform(get("/api/v1/products/category/{category}", "Electronics"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.products.length()").value(1))
@@ -139,11 +131,9 @@ class ProductControllerTest {
     @Test
     @DisplayName("Should return empty list when no products in category")
     void getProductsByCategory_ShouldReturnEmptyList_WhenNoProductsInCategory() throws Exception {
-        // Arrange
         ProductListDto emptyListDto = ProductListDto.builder().products(List.of()).build();
         when(productService.getProductsByCategory("NonExistent")).thenReturn(emptyListDto);
 
-        // Act & Assert
         mockMvc.perform(get("/api/v1/products/category/{category}", "NonExistent"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.products.length()").value(0));
@@ -152,11 +142,9 @@ class ProductControllerTest {
     @Test
     @DisplayName("Should return not found when product does not exist")
     void getProductById_ShouldReturnNotFound_WhenProductDoesNotExist() throws Exception {
-        // Arrange
         when(productService.getProductById(productId))
                 .thenThrow(new ProductNotFoundException(productId));
 
-        // Act & Assert
         mockMvc.perform(get("/api/v1/products/{id}", productId))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.title").value("Product Not Found"));
@@ -165,10 +153,8 @@ class ProductControllerTest {
     @Test
     @DisplayName("Should return bad request for invalid UUID")
     void getProductById_ShouldReturnBadRequest_WhenInvalidUUID() throws Exception {
-        // Arrange
         String invalidUuid = "invalid-uuid";
 
-        // Act & Assert
         mockMvc.perform(get("/api/v1/products/{id}", invalidUuid))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.title").value("Invalid Parameter"));
@@ -177,7 +163,6 @@ class ProductControllerTest {
     @Test
     @DisplayName("Should handle case insensitive categories")
     void getProductsByCategory_ShouldHandleCaseInsensitiveCategories() throws Exception {
-        // Arrange
         ProductDto product = ProductDto.builder()
                 .productId(productId)
                 .category("Electronics")
@@ -191,7 +176,6 @@ class ProductControllerTest {
 
         when(productService.getProductsByCategory("electronics")).thenReturn(productListDto);
 
-        // Act & Assert
         mockMvc.perform(get("/api/v1/products/category/{category}", "electronics"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.products.length()").value(1))

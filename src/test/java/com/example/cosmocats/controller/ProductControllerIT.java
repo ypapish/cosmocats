@@ -26,10 +26,8 @@ class ProductControllerIT extends AbstractIt {
     @Test
     @DisplayName("Should get product by ID successfully")
     void shouldGetProductById() throws Exception {
-        // Arrange
         UUID productId = UUID.fromString("550e8400-e29b-41d4-a716-446655440001");
 
-        // Act & Assert
         mockMvc.perform(get("/api/v1/products/{id}", productId)
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
@@ -41,7 +39,6 @@ class ProductControllerIT extends AbstractIt {
     @Test
     @DisplayName("Should get products by category successfully")
     void shouldGetProductsByCategory() throws Exception {
-        // Act & Assert
         mockMvc.perform(get("/api/v1/products/category/{category}", "Electronics")
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
@@ -52,7 +49,6 @@ class ProductControllerIT extends AbstractIt {
     @Test
     @DisplayName("Should return all products successfully")
     void shouldGetAllProducts() throws Exception {
-        // Act & Assert
         mockMvc.perform(get("/api/v1/products")
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
@@ -63,10 +59,8 @@ class ProductControllerIT extends AbstractIt {
     @Test
     @DisplayName("Should demonstrate WireMock integration")
     void shouldDemonstrateWireMockIntegration() throws Exception {
-        // Arrange
         UUID productId = UUID.fromString("550e8400-e29b-41d4-a716-446655440001");
 
-        // Act & Assert - базовий функціонал
         mockMvc.perform(get("/api/v1/products/{id}", productId)
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())

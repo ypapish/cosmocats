@@ -46,7 +46,6 @@ class AdminProductControllerTest {
     @Test
     @DisplayName("Should create product with valid data")
     void createProduct_ShouldReturnCreated_WhenValidData() throws Exception {
-        // Arrange
         ProductUpdateDto createDto = ProductUpdateDto.builder()
                 .category("Electronics")
                 .name("Galaxy Phone")
@@ -64,7 +63,6 @@ class AdminProductControllerTest {
 
         when(productService.createProduct(any(ProductUpdateDto.class))).thenReturn(responseDto);
 
-        // Act & Assert
         mockMvc.perform(post("/api/v1/admin/products")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createDto)))
@@ -81,7 +79,6 @@ class AdminProductControllerTest {
     @Test
     @DisplayName("Should update product with valid data")
     void updateProduct_ShouldReturnOk_WhenValidData() throws Exception {
-        // Arrange
         ProductUpdateDto updateDto = ProductUpdateDto.builder()
                 .category("Electronics")
                 .name("Updated Galaxy Phone")
@@ -99,7 +96,6 @@ class AdminProductControllerTest {
 
         when(productService.updateProduct(eq(productId), any(ProductUpdateDto.class))).thenReturn(responseDto);
 
-        // Act & Assert
         mockMvc.perform(put("/api/v1/admin/products/{id}", productId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateDto)))
@@ -116,10 +112,8 @@ class AdminProductControllerTest {
     @Test
     @DisplayName("Should delete product when product exists")
     void deleteProduct_ShouldReturnNoContent_WhenProductExists() throws Exception {
-        // Arrange
         doNothing().when(productService).deleteProduct(productId);
 
-        // Act & Assert
         mockMvc.perform(delete("/api/v1/admin/products/{id}", productId))
                 .andExpect(status().isNoContent());
 
@@ -129,15 +123,13 @@ class AdminProductControllerTest {
     @Test
     @DisplayName("Should return bad request when category is blank")
     void createProduct_ShouldReturnBadRequest_WhenCategoryIsBlank() throws Exception {
-        // Arrange
         ProductUpdateDto invalidDto = ProductUpdateDto.builder()
-                .category("")  // Blank category
+                .category("")
                 .name("Galaxy Phone")
                 .description("Advanced smartphone")
                 .price(999.99f)
                 .build();
 
-        // Act & Assert
         mockMvc.perform(post("/api/v1/admin/products")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidDto)))
@@ -149,7 +141,6 @@ class AdminProductControllerTest {
     @Test
     @DisplayName("Should return bad request when name is blank")
     void createProduct_ShouldReturnBadRequest_WhenNameIsBlank() throws Exception {
-        // Arrange
         ProductUpdateDto invalidDto = ProductUpdateDto.builder()
                 .category("Electronics")
                 .name("")  // Blank name
@@ -157,7 +148,6 @@ class AdminProductControllerTest {
                 .price(999.99f)
                 .build();
 
-        // Act & Assert
         mockMvc.perform(post("/api/v1/admin/products")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidDto)))
@@ -169,15 +159,13 @@ class AdminProductControllerTest {
     @Test
     @DisplayName("Should return bad request when price is zero")
     void createProduct_ShouldReturnBadRequest_WhenPriceIsZero() throws Exception {
-        // Arrange
         ProductUpdateDto invalidDto = ProductUpdateDto.builder()
                 .category("Electronics")
                 .name("Galaxy Phone")
                 .description("Advanced smartphone")
-                .price(0.0f)  // Invalid price
+                .price(0.0f)
                 .build();
 
-        // Act & Assert
         mockMvc.perform(post("/api/v1/admin/products")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidDto)))
@@ -189,15 +177,13 @@ class AdminProductControllerTest {
     @Test
     @DisplayName("Should return bad request when price is negative")
     void createProduct_ShouldReturnBadRequest_WhenPriceIsNegative() throws Exception {
-        // Arrange
         ProductUpdateDto invalidDto = ProductUpdateDto.builder()
                 .category("Electronics")
                 .name("Galaxy Phone")
                 .description("Advanced smartphone")
-                .price(-10.0f)  // Negative price
+                .price(-10.0f)
                 .build();
 
-        // Act & Assert
         mockMvc.perform(post("/api/v1/admin/products")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidDto)))
@@ -209,8 +195,7 @@ class AdminProductControllerTest {
     @Test
     @DisplayName("Should return bad request when name exceeds max length")
     void createProduct_ShouldReturnBadRequest_WhenNameExceedsMaxLength() throws Exception {
-        // Arrange
-        String longName = "A".repeat(101); // 101 characters - exceeds max 100
+        String longName = "A".repeat(101);
         ProductUpdateDto invalidDto = ProductUpdateDto.builder()
                 .category("Electronics")
                 .name(longName)
@@ -218,7 +203,6 @@ class AdminProductControllerTest {
                 .price(999.99f)
                 .build();
 
-        // Act & Assert
         mockMvc.perform(post("/api/v1/admin/products")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidDto)))
@@ -230,8 +214,7 @@ class AdminProductControllerTest {
     @Test
     @DisplayName("Should return bad request when description exceeds max length")
     void createProduct_ShouldReturnBadRequest_WhenDescriptionExceedsMaxLength() throws Exception {
-        // Arrange
-        String longDescription = "A".repeat(1001); // 1001 characters - exceeds max 1000
+        String longDescription = "A".repeat(1001);
         ProductUpdateDto invalidDto = ProductUpdateDto.builder()
                 .category("Electronics")
                 .name("Galaxy Phone")
@@ -239,7 +222,6 @@ class AdminProductControllerTest {
                 .price(999.99f)
                 .build();
 
-        // Act & Assert
         mockMvc.perform(post("/api/v1/admin/products")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidDto)))
@@ -251,15 +233,13 @@ class AdminProductControllerTest {
     @Test
     @DisplayName("Should return bad request when missing cosmic word")
     void createProduct_ShouldReturnBadRequest_WhenMissingCosmicWord() throws Exception {
-        // Arrange
         ProductUpdateDto invalidDto = ProductUpdateDto.builder()
                 .category("Electronics")
-                .name("Regular Phone")  // No cosmic word
+                .name("Regular Phone")
                 .description("Regular smartphone")
                 .price(999.99f)
                 .build();
 
-        // Act & Assert
         mockMvc.perform(post("/api/v1/admin/products")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidDto)))
@@ -271,7 +251,6 @@ class AdminProductControllerTest {
     @Test
     @DisplayName("Should return conflict when product already exists")
     void createProduct_ShouldReturnConflict_WhenProductAlreadyExists() throws Exception {
-        // Arrange
         ProductUpdateDto createDto = ProductUpdateDto.builder()
                 .category("Electronics")
                 .name("Galaxy Phone")
@@ -282,7 +261,6 @@ class AdminProductControllerTest {
         when(productService.createProduct(any(ProductUpdateDto.class)))
                 .thenThrow(new ProductAlreadyExistsException("Galaxy Phone"));
 
-        // Act & Assert
         mockMvc.perform(post("/api/v1/admin/products")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createDto)))
@@ -295,7 +273,6 @@ class AdminProductControllerTest {
     @Test
     @DisplayName("Should return not found when updating non-existent product")
     void updateProduct_ShouldReturnNotFound_WhenProductNotFound() throws Exception {
-        // Arrange
         ProductUpdateDto updateDto = ProductUpdateDto.builder()
                 .category("Electronics")
                 .name("Updated Galaxy Phone")
@@ -306,7 +283,6 @@ class AdminProductControllerTest {
         when(productService.updateProduct(eq(productId), any(ProductUpdateDto.class)))
                 .thenThrow(new ProductNotFoundException(productId));
 
-        // Act & Assert
         mockMvc.perform(put("/api/v1/admin/products/{id}", productId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateDto)))
@@ -319,10 +295,9 @@ class AdminProductControllerTest {
     @Test
     @DisplayName("Should return conflict when product name already exists during update")
     void updateProduct_ShouldReturnConflict_WhenProductNameAlreadyExists() throws Exception {
-        // Arrange
         ProductUpdateDto updateDto = ProductUpdateDto.builder()
                 .category("Electronics")
-                .name("Existing Galaxy Product")  // Використовуємо космічне слово
+                .name("Existing Galaxy Product")
                 .description("Updated description")
                 .price(899.99f)
                 .build();
@@ -330,7 +305,6 @@ class AdminProductControllerTest {
         when(productService.updateProduct(eq(productId), any(ProductUpdateDto.class)))
                 .thenThrow(new ProductAlreadyExistsException("Existing Galaxy Product"));
 
-        // Act & Assert
         mockMvc.perform(put("/api/v1/admin/products/{id}", productId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateDto)))
