@@ -37,15 +37,9 @@ jobs:
       - name: Grant execute permission for Gradlew
         run: chmod +x ./gradlew
 
-      - name: Test
+      - name: Run tests and generate coverage
         run: ./gradlew clean test jacocoTestReport
 
-      # Run Gradle build and tests with coverage
-      - name: Build with Gradle
-        uses: gradle/gradle-build-action@v3
-        with:
-          cache-disabled: true
-          generate-job-summary: false
 
       # Upload the JaCoCo test coverage report
       - name: Upload coverage report
