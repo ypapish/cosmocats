@@ -12,6 +12,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.UUID;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -60,6 +61,121 @@ class ProductControllerIT extends AbstractIt {
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.products").isArray())
-            .andExpect(jsonPath("$.products.length()").value(4)); // 4 mock products from repository
+            .andExpect(jsonPath("$.products.length()").value(4));
+    }
+
+    @Test
+    @DisplayName("Should get product by ID successfully with inventory check")
+    void shouldGetProductByIdWithInventory() throws Exception {
+        // Arrange
+        UUID productId = UUID.fromString("550e8400-e29b-41d4-a716-446655440001");
+        
+        stubInventoryCheck(productId, true, 50);
+        stubPriceCalculation(productId, 999.99f, 899.99f);
+
+        // Act & Assert
+        mockMvc.perform(get("/api/v1/products/{id}", productId)
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.productId").value(productId.toString()))
+            .andExpect(jsonPath("$.name").value("Quantum Phone X1"))
+            .andExpect(jsonPath("$.category").value("Electronics"));
+    }
+
+    @Test
+    @DisplayName("Should get products by category with inventory data")
+    void shouldGetProductsByCategoryWithInventory() throws Exception {
+        // Arrange
+        UUID electronicsProduct1 = UUID.fromString("550e8400-e29b-41d4-a716-446655440001");
+        UUID electronicsProduct2 = UUID.fromString("550e8400-e29b-41d4-a716-446655440004");
+        
+        stubInventoryCheck(electronicsProduct1, true, 25);
+        stubInventoryCheck(electronicsProduct2, false, 0);
+
+        // Act & Assert
+        mockMvc.perform(get("/api/v1/products/category/{category}", "Electronics")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.products").isArray())
+            .andExpect(jsonPath("$.products[0].category").value("Electronics"));
+    }
+
+    @Test
+    @DisplayName("Should handle inventory service timeout gracefully")
+    void shouldHandleInventoryTimeout() throws Exception {
+        // Arrange
+        UUID productId = UUID.fromString("550e8400-e29b-41d4-a716-446655440002");
+        
+        getWireMockServer().stubFor(
+            get(urlEqualTo("/api/inventory/" + productId))
+                .willReturn(aResponse()
+                    .withStatus(408)
+                    .withFixedDelay(2000)
+                    .withBody("{\"error\":\"Request timeout\"}"))
+        );
+
+        // Act & Assert - продукт все одно повинен повертатися навіть при помилці інвентаризації
+        mockMvc.perform(get("/api/v1/products/{id}", productId)
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.productId").value(productId.toString()))
+            .andExpect(jsonPath("$.name").value("Interstellar Travel Guide"));
+    }
+
+    @Test
+    @DisplayName("Should get product with dynamic pricing")
+    void shouldGetProductWithDynamicPricing() throws Exception {
+        // Arrange
+        UUID productId = UUID.fromString("550e8400-e29b-41d4-a716-446655440003");
+        
+        getWireMockServer().stubFor(
+            post(urlEqualTo("/api/pricing/calculate"))
+                .withRequestBody(equalToJson(
+                    "{\"productId\":\"550e8400-e29b-41d4-a716-446655440003\",\"originalPrice\":4.99}"
+                ))
+                .willReturn(aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody("{\"productId\":\"550e8400-e29b-41d4-a716-446655440003\",\"originalPrice\":4.99,\"discountedPrice\":3.99,\"discountApplied\":1.00}"))
+        );
+
+        // Act & Assert
+        mockMvc.perform(get("/api/v1/products/{id}", productId)
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.productId").value(productId.toString()))
+            .andExpect(jsonPath("$.name").value("Astro Nutrition Bar"));
+    }
+
+    @Test
+    @DisplayName("Should verify WireMock stubbing is actually used")
+    void shouldVerifyWireMockCalls() throws Exception {
+        // Arrange
+        UUID productId = UUID.fromString("550e8400-e29b-41d4-a716-446655440001");
+        
+        stubInventoryCheck(productId, true, 100);
+
+        // Act
+        mockMvc.perform(get("/api/v1/products/{id}", productId)
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        // Assert - верифікація, що WireMock був викликаний
+        getWireMockServer().verify(exactly(1), getRequestedFor(urlEqualTo("/api/inventory/" + productId)));
+    }
+
+    @Test
+    @DisplayName("Should handle inventory service error")
+    void shouldHandleInventoryServiceError() throws Exception {
+        // Arrange
+        UUID productId = UUID.fromString("550e8400-e29b-41d4-a716-446655440001");
+        
+        stubInventoryCheckError(productId);
+
+        // Act & Assert
+        mockMvc.perform(get("/api/v1/products/{id}", productId)
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.productId").value(productId.toString()));
     }
 }
