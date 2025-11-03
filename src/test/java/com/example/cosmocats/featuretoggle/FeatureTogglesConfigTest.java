@@ -72,7 +72,7 @@ class FeatureTogglesConfigTest {
 
     @Test
     void check_ShouldReturnFalseWhenTogglesMapIsNull() {
-        
+
         assertFalse(featureToggleProperties.check("anyFeature"));
     }
 

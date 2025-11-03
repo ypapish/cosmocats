@@ -2,10 +2,10 @@ package com.example.cosmocats.controller;
 
 import com.example.cosmocats.domain.CatInfo;
 import com.example.cosmocats.dto.CatInfoDto;
-import com.example.cosmocats.featuretoggle.FeatureToggles;
 import com.example.cosmocats.featuretoggle.FeatureToggleExtension;
-import com.example.cosmocats.featuretoggle.annotation.EnabledFeatureToggle;
+import com.example.cosmocats.featuretoggle.FeatureToggles;
 import com.example.cosmocats.featuretoggle.annotation.DisabledFeatureToggle;
+import com.example.cosmocats.featuretoggle.annotation.EnabledFeatureToggle;
 import com.example.cosmocats.service.CosmoCatService;
 import com.example.cosmocats.service.mapper.CatInfoMapper;
 import org.junit.jupiter.api.Test;
@@ -24,8 +24,8 @@ import java.util.UUID;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(CosmoCatController.class)
 @ExtendWith({SpringExtension.class, FeatureToggleExtension.class})
@@ -40,38 +40,23 @@ class CosmoCatControllerTest {
     @Autowired
     private CatInfoMapper catInfoMapper;
 
-    @TestConfiguration
-    static class TestConfig {
-        @Bean
-        @Primary
-        public CosmoCatService cosmoCatService() {
-            return mock(CosmoCatService.class);
-        }
-
-        @Bean
-        @Primary
-        public CatInfoMapper catInfoMapper() {
-            return mock(CatInfoMapper.class);
-        }
-    }
-
     @Test
     @EnabledFeatureToggle(FeatureToggles.COSMO_CATS)
     void getCosmoCats_whenFeatureEnabled_shouldReturnCats() throws Exception {
         List<CatInfo> mockCatInfos = List.of(
-            CatInfo.builder()
-                .id(UUID.fromString("550e8400-e29b-41d4-a716-446655440010"))
-                .name("Cosmo Cat")
-                .description("The guardian of the cosmic realm")
-                .build()
+                CatInfo.builder()
+                        .id(UUID.fromString("550e8400-e29b-41d4-a716-446655440010"))
+                        .name("Cosmo Cat")
+                        .description("The guardian of the cosmic realm")
+                        .build()
         );
-        
+
         List<CatInfoDto> mockCatDtos = List.of(
-            CatInfoDto.builder()
-                .id(UUID.fromString("550e8400-e29b-41d4-a716-446655440010"))
-                .name("Cosmo Cat")
-                .description("The guardian of the cosmic realm")
-                .build()
+                CatInfoDto.builder()
+                        .id(UUID.fromString("550e8400-e29b-41d4-a716-446655440010"))
+                        .name("Cosmo Cat")
+                        .description("The guardian of the cosmic realm")
+                        .build()
         );
 
         when(cosmoCatService.getAllCatsInfos()).thenReturn(mockCatInfos);
@@ -89,5 +74,20 @@ class CosmoCatControllerTest {
                 .andExpect(status().isServiceUnavailable())
                 .andExpect(jsonPath("$.title").value("Feature Not Available"))
                 .andExpect(jsonPath("$.detail").value("Feature 'cosmoCats' is not available"));
+    }
+
+    @TestConfiguration
+    static class TestConfig {
+        @Bean
+        @Primary
+        public CosmoCatService cosmoCatService() {
+            return mock(CosmoCatService.class);
+        }
+
+        @Bean
+        @Primary
+        public CatInfoMapper catInfoMapper() {
+            return mock(CatInfoMapper.class);
+        }
     }
 }

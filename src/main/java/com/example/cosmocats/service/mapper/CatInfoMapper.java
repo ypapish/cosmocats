@@ -2,9 +2,10 @@ package com.example.cosmocats.service.mapper;
 
 import com.example.cosmocats.domain.CatInfo;
 import com.example.cosmocats.dto.CatInfoDto;
-import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+
+import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface CatInfoMapper {

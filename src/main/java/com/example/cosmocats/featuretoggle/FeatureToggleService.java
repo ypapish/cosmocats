@@ -1,8 +1,9 @@
 package com.example.cosmocats.featuretoggle;
 
 import com.example.cosmocats.featuretoggle.config.FeatureToggleProperties;
-import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class FeatureToggleService {

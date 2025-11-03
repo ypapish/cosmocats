@@ -37,7 +37,7 @@ public class FeatureToggleExtension implements BeforeEachCallback, AfterEachCall
                 DisabledFeatureToggle disabledFeatureToggleAnnotation = method.getAnnotation(DisabledFeatureToggle.class);
                 featureName = disabledFeatureToggleAnnotation.value().getFeatureName();
             }
-            
+
             if (featureName != null) {
                 FeatureToggleService featureToggleService = getFeatureToggleService(context);
                 if (getFeatureNamePropertyAsBoolean(context, featureName)) {

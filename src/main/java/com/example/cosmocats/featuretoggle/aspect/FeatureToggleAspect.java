@@ -1,9 +1,9 @@
 package com.example.cosmocats.featuretoggle.aspect;
 
+import com.example.cosmocats.featuretoggle.FeatureToggleService;
 import com.example.cosmocats.featuretoggle.FeatureToggles;
 import com.example.cosmocats.featuretoggle.annotation.FeatureToggle;
 import com.example.cosmocats.featuretoggle.exception.FeatureNotAvailableException;
-import com.example.cosmocats.featuretoggle.FeatureToggleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -27,11 +27,11 @@ public class FeatureToggleAspect {
     private Object checkToggle(ProceedingJoinPoint joinPoint, FeatureToggle featureToggle) throws Throwable {
         FeatureToggles toggle = featureToggle.value();
         String featureName = toggle.getFeatureName();
-        
+
         if (featureToggleService.check(featureName)) {
             return joinPoint.proceed();
         }
-        
+
         log.warn("Feature toggle {} is not enabled!", featureName);
         throw new FeatureNotAvailableException(featureName);
     }

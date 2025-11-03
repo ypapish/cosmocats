@@ -18,7 +18,7 @@ import java.util.List;
 @RequestMapping("/api/v1/cosmo-cats")
 @RequiredArgsConstructor
 public class CosmoCatController {
-    
+
     private final CosmoCatService cosmoCatService;
     private final CatInfoMapper catInfoMapper;
 

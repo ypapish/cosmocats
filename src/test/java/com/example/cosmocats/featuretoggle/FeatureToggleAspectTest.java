@@ -1,7 +1,7 @@
 package com.example.cosmocats.featuretoggle;
 
-import com.example.cosmocats.featuretoggle.aspect.FeatureToggleAspect;
 import com.example.cosmocats.featuretoggle.annotation.FeatureToggle;
+import com.example.cosmocats.featuretoggle.aspect.FeatureToggleAspect;
 import com.example.cosmocats.featuretoggle.exception.FeatureNotAvailableException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,7 +10,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.aop.aspectj.annotation.AspectJProxyFactory;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
