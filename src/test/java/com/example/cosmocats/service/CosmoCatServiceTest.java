@@ -1,65 +1,83 @@
 package com.example.cosmocats.service;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
+
 import com.example.cosmocats.featuretoggle.FeatureToggleService;
 import com.example.cosmocats.featuretoggle.config.FeatureToggleProperties;
+import com.example.cosmocats.featuretoggle.exception.FeatureNotAvailableException;
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class FeatureToggleServiceTest {
 
-    @Mock
-    private FeatureToggleProperties featureToggleProperties;
+  @Mock private FeatureToggleProperties featureToggleProperties;
+  @Mock private FeatureToggleService featureToggleService;
 
-    private FeatureToggleService featureToggleService;
+  private FeatureToggleService featureToggleServiceInstance;
 
-    @BeforeEach
-    void setUp() {
-        when(featureToggleProperties.getToggles()).thenReturn(new HashMap<>());
-        featureToggleService = new FeatureToggleService(featureToggleProperties);
-    }
+  @InjectMocks private CosmoCatService cosmoCatService;
 
-    @Test
-    void constructor_ShouldInitializeFeaturesCorrectly() {
-        Map<String, Boolean> testToggles = new HashMap<>();
-        testToggles.put("cosmoCats", true);
-        testToggles.put("kittyProducts", false);
+  @BeforeEach
+  void setUp() {
+    when(featureToggleProperties.getToggles()).thenReturn(new HashMap<>());
+    featureToggleServiceInstance = new FeatureToggleService(featureToggleProperties);
+  }
 
-        when(featureToggleProperties.getToggles()).thenReturn(testToggles);
+  @Test
+  void constructor_ShouldInitializeFeaturesCorrectly() {
+    Map<String, Boolean> testToggles = new HashMap<>();
+    testToggles.put("cosmoCats", true);
+    testToggles.put("kittyProducts", false);
 
-        FeatureToggleService service = new FeatureToggleService(featureToggleProperties);
+    when(featureToggleProperties.getToggles()).thenReturn(testToggles);
 
-        assertTrue(service.check("cosmoCats"));
-        assertFalse(service.check("kittyProducts"));
-    }
+    FeatureToggleService service = new FeatureToggleService(featureToggleProperties);
 
-    @Test
-    void enable_ShouldEnableFeature() {
-        featureToggleService.enable("cosmoCats");
+    assertTrue(service.check("cosmoCats"));
+    assertFalse(service.check("kittyProducts"));
+  }
 
-        assertTrue(featureToggleService.check("cosmoCats"));
-    }
+  @Test
+  void enable_ShouldEnableFeature() {
+    featureToggleServiceInstance.enable("cosmoCats");
 
-    @Test
-    void disable_ShouldDisableFeature() {
-        featureToggleService.enable("cosmoCats");
-        featureToggleService.disable("cosmoCats");
+    assertTrue(featureToggleServiceInstance.check("cosmoCats"));
+  }
 
-        assertFalse(featureToggleService.check("cosmoCats"));
-    }
+  @Test
+  void disable_ShouldDisableFeature() {
+    featureToggleServiceInstance.enable("cosmoCats");
+    featureToggleServiceInstance.disable("cosmoCats");
 
-    @Test
-    void check_WhenFeatureDoesNotExist_ShouldReturnFalse() {
-        assertFalse(featureToggleService.check("randomNonExistentFeature"));
-    }
+    assertFalse(featureToggleServiceInstance.check("cosmoCats"));
+  }
+
+  @Test
+  void check_WhenFeatureDoesNotExist_ShouldReturnFalse() {
+    assertFalse(featureToggleServiceInstance.check("randomNonExistentFeature"));
+  }
+
+  @Test
+  void getAllCatsInfos_whenFeatureEnabled_shouldReturnCats() {
+    when(featureToggleService.check("cosmoCats")).thenReturn(true);
+
+    cosmoCatService.getAllCatsInfos();
+  }
+
+  @Test
+  void getAllCatsInfos_whenFeatureDisabled_shouldThrowException() {
+    when(featureToggleService.check("cosmoCats")).thenReturn(false);
+
+    assertThrows(FeatureNotAvailableException.class, () -> cosmoCatService.getAllCatsInfos());
+  }
 }
