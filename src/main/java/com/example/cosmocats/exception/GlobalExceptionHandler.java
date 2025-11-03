@@ -8,6 +8,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.example.cosmocats.featuretoggle.exception.FeatureNotAvailableException;
+
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -53,4 +55,15 @@ public class GlobalExceptionHandler {
     log.error("Internal server error: {}", ex.getMessage(), ex);
     return problemDetail;
   }
+
+  @ExceptionHandler(FeatureNotAvailableException.class)
+  public ProblemDetail handleFeatureNotAvailable(FeatureNotAvailableException ex) {
+    ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.SERVICE_UNAVAILABLE);
+    problemDetail.setTitle("Feature Not Available");
+    problemDetail.setDetail(ex.getMessage());
+    problemDetail.setProperty("timestamp", LocalDateTime.now());
+
+    log.info("Feature not available: {}", ex.getMessage());
+    return problemDetail;
+}
 }
