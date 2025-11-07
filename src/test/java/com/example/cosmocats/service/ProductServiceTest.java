@@ -34,11 +34,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @DisplayName("Product Service Tests")
 class ProductServiceTest {
 
-  @Mock private ProductRepository productRepository;
+  @Mock private 
+  ProductRepository productRepository;
 
-  @Mock private ProductMapper productMapper;
+  @Mock private 
+  ProductMapper productMapper;
 
-  @InjectMocks private ProductService productService;
+  @InjectMocks private 
+  ProductService productService;
 
   private UUID productId;
   private Product product;
