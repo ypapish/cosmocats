@@ -9,9 +9,9 @@ import lombok.Value;
 @Value
 @Builder
 public class OrderEntryDto {
-    @NotBlank(message = "Product type is required")
-    ProductDto product;
+  @NotBlank(message = "Product type is required")
+  ProductDto product;
 
-    @PositiveOrZero(message = "Order amount must be greater than 0")
-    Integer amount;
+  @PositiveOrZero(message = "Order amount must be greater than 0")
+  Integer amount;
 }

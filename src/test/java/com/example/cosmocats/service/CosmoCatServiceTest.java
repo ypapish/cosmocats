@@ -1,5 +1,8 @@
 package com.example.cosmocats.service;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
 import com.example.cosmocats.featuretoggle.FeatureToggleService;
 import com.example.cosmocats.featuretoggle.exception.FeatureNotAvailableException;
 import org.junit.jupiter.api.Test;
@@ -8,42 +11,37 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
 @ExtendWith(MockitoExtension.class)
 class CosmoCatServiceTest {
 
-    @Mock
-    private FeatureToggleService featureToggleService;
+  @Mock
+  private FeatureToggleService featureToggleService;
 
-    @InjectMocks
-    private CosmoCatService cosmoCatService;
+  @InjectMocks
+  private CosmoCatService cosmoCatService;
 
-    @Test
-    void getAllCatsInfos_whenFeatureEnabled_shouldReturnCats() {
-        when(featureToggleService.check("cosmoCats")).thenReturn(true);
+  @Test
+  void getAllCatsInfos_whenFeatureEnabled_shouldReturnCats() {
+    when(featureToggleService.check("cosmoCats")).thenReturn(true);
 
-        var result = assertDoesNotThrow(() -> cosmoCatService.getAllCatsInfos());
+    var result = assertDoesNotThrow(() -> cosmoCatService.getAllCatsInfos());
 
-        assertNotNull(result);
-        assertFalse(result.isEmpty());
-        assertEquals(4, result.size());
+    assertNotNull(result);
+    assertFalse(result.isEmpty());
+    assertEquals(4, result.size());
 
-        verify(featureToggleService, times(1)).check("cosmoCats");
-    }
+    verify(featureToggleService, times(1)).check("cosmoCats");
+  }
 
-    @Test
-    void getAllCatsInfos_whenFeatureDisabled_shouldThrowException() {
-        when(featureToggleService.check("cosmoCats")).thenReturn(false);
+  @Test
+  void getAllCatsInfos_whenFeatureDisabled_shouldThrowException() {
+    when(featureToggleService.check("cosmoCats")).thenReturn(false);
 
-        FeatureNotAvailableException exception = assertThrows(
-                FeatureNotAvailableException.class,
-                () -> cosmoCatService.getAllCatsInfos()
-        );
+    FeatureNotAvailableException exception =
+        assertThrows(FeatureNotAvailableException.class, () -> cosmoCatService.getAllCatsInfos());
 
-        assertEquals("Feature 'cosmoCats' is not available", exception.getMessage());
+    assertEquals("Feature 'cosmoCats' is not available", exception.getMessage());
 
-        verify(featureToggleService, times(1)).check("cosmoCats");
-    }
+    verify(featureToggleService, times(1)).check("cosmoCats");
+  }
 }
