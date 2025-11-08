@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class CosmocatsApplication {
 
-  public static void main(String[] args) {
-    SpringApplication.run(CosmocatsApplication.class, args);
-  }
+    public static void main(String[] args) {
+        SpringApplication.run(CosmocatsApplication.class, args);
+    }
 }
