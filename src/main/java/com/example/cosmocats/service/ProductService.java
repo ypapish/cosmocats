@@ -1,111 +1,138 @@
 package com.example.cosmocats.service;
 
-import com.example.cosmocats.domain.Product;
 import com.example.cosmocats.dto.product.ProductDto;
 import com.example.cosmocats.dto.product.ProductListDto;
 import com.example.cosmocats.dto.product.ProductUpdateDto;
+import com.example.cosmocats.entity.CategoryEntity;
+import com.example.cosmocats.entity.ProductEntity;
 import com.example.cosmocats.exception.ProductAlreadyExistsException;
 import com.example.cosmocats.exception.ProductNotFoundException;
+import com.example.cosmocats.repository.CategoryRepository;
 import com.example.cosmocats.repository.ProductRepository;
+import com.example.cosmocats.repository.projection.CosmicProductProjection;
 import com.example.cosmocats.service.mapper.ProductMapper;
-import java.util.List;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class ProductService {
 
-  private final ProductRepository productRepository;
-  private final ProductMapper productMapper;
+    private final ProductRepository productRepository;
+    private final CategoryRepository categoryRepository;
+    private final ProductMapper productMapper;
 
-  public ProductDto createProduct(ProductUpdateDto createDto) {
-    log.info("Creating new product: {}", createDto.getName());
+    @Transactional
+    public ProductDto createProduct(ProductUpdateDto createDto) {
+        log.info("Creating new product: {}", createDto.getName());
 
-    if (productRepository.existsByName(createDto.getName())) {
-      log.warn("Product already exists with name: {}", createDto.getName());
-      throw new ProductAlreadyExistsException(createDto.getName());
+        CategoryEntity category = categoryRepository.findByName(createDto.getCategory())
+            .orElseThrow(() -> new RuntimeException("Category not found: " + createDto.getCategory()));
+
+        if (productRepository.findByName(createDto.getName()).isPresent()) {
+            log.warn("Product already exists with name: {}", createDto.getName());
+            throw new ProductAlreadyExistsException(createDto.getName());
+        }
+
+        ProductEntity product = productMapper.toProduct(createDto);
+        product.setCategory(category);
+
+        ProductEntity savedProduct = productRepository.save(product);
+        log.info("Product created successfully with ID: {} and UUID: {}", 
+                savedProduct.getProductId(), savedProduct.getProductUuid());
+
+        return productMapper.toProductDto(savedProduct);
     }
 
-    Product product = productMapper.toProduct(createDto);
+    @Transactional(readOnly = true)
+    public ProductDto getProductById(UUID productUuid) {
+        log.info("Fetching product by UUID: {}", productUuid);
 
-    Product savedProduct = productRepository.save(product);
-    log.info("Product created successfully with ID: {}", savedProduct.getProductId());
+        ProductEntity product = productRepository.findByNaturalId(productUuid)
+            .orElseThrow(() -> {
+                log.warn("Product not found with UUID: {}", productUuid);
+                return new ProductNotFoundException(productUuid);
+            });
 
-    return productMapper.toProductDto(savedProduct);
-  }
-
-  public ProductDto getProductById(UUID productId) {
-    log.info("Fetching product by ID: {}", productId);
-
-    Product product =
-        productRepository
-            .findById(productId)
-            .orElseThrow(
-                () -> {
-                  log.warn("Product not found with ID: {}", productId);
-                  return new ProductNotFoundException(productId);
-                });
-
-    log.info("Product found: {}", product.getName());
-    return productMapper.toProductDto(product);
-  }
-
-  public ProductListDto getAllProducts() {
-    log.info("Fetching all products");
-
-    List<Product> products = productRepository.findAll();
-    log.info("Found {} products", products.size());
-
-    return productMapper.toProductListDto(products);
-  }
-
-  public ProductDto updateProduct(UUID productId, ProductUpdateDto updateDto) {
-    log.info("Updating product with ID: {}", productId);
-
-    if (!productRepository.existsById(productId)) {
-      log.warn("Product not found for update with ID: {}", productId);
-      throw new ProductNotFoundException(productId);
+        log.info("Product found: {}", product.getName());
+        return productMapper.toProductDto(product);
     }
 
-    Product existingProduct = productRepository.findById(productId).get();
-    if (!existingProduct.getName().equals(updateDto.getName())
-        && productRepository.existsByName(updateDto.getName())) {
-      log.warn("Product already exists with name: {}", updateDto.getName());
-      throw new ProductAlreadyExistsException(updateDto.getName());
+    @Transactional(readOnly = true)
+    public ProductListDto getAllProducts() {
+        log.info("Fetching all products");
+
+        List<ProductEntity> products = productRepository.findAll();
+        log.info("Found {} products", products.size());
+
+        return productMapper.toProductListDto(products);
     }
 
-    Product product = productMapper.toProductWithId(productId, updateDto);
+    @Transactional
+    public ProductDto updateProduct(UUID productUuid, ProductUpdateDto updateDto) {
+        log.info("Updating product with UUID: {}", productUuid);
 
-    Product updatedProduct = productRepository.save(product);
-    log.info("Product updated successfully: {}", updatedProduct.getName());
+        ProductEntity existingProduct = productRepository.findByNaturalId(productUuid)
+            .orElseThrow(() -> {
+                log.warn("Product not found for update with UUID: {}", productUuid);
+                return new ProductNotFoundException(productUuid);
+            });
 
-    return productMapper.toProductDto(updatedProduct);
-  }
+        CategoryEntity category = categoryRepository.findByName(updateDto.getCategory())
+            .orElseThrow(() -> new RuntimeException("Category not found: " + updateDto.getCategory()));
 
-  public void deleteProduct(UUID productId) {
-    log.info("Deleting product with ID: {}", productId);
+        if (!existingProduct.getName().equals(updateDto.getName()) && 
+            productRepository.findByName(updateDto.getName()).isPresent()) {
+            log.warn("Product already exists with name: {}", updateDto.getName());
+            throw new ProductAlreadyExistsException(updateDto.getName());
+        }
 
-    if (productRepository.existsById(productId)) {
-      productRepository.deleteById(productId);
-      log.info("Product deleted successfully with ID: {}", productId);
-    } else {
-      log.info("Product not found for deletion with ID: {}", productId);
+        existingProduct.setCategory(category);
+        existingProduct.setName(updateDto.getName());
+        existingProduct.setDescription(updateDto.getDescription());
+        existingProduct.setPrice(BigDecimal.valueOf(updateDto.getPrice()));
+
+        ProductEntity savedProduct = productRepository.save(existingProduct);
+        log.info("Product updated successfully: {}", savedProduct.getName());
+
+        return productMapper.toProductDto(savedProduct);
     }
-  }
 
-  public ProductListDto getProductsByCategory(String category) {
-    log.info("Fetching products by category: {}", category);
+    @Transactional
+    public void deleteProduct(UUID productUuid) {
+        log.info("Deleting product with UUID: {}", productUuid);
 
-    List<Product> products =
-        productRepository.findAll().stream()
-            .filter(product -> category.equalsIgnoreCase(product.getCategory()))
-            .toList();
+        ProductEntity product = productRepository.findByNaturalId(productUuid)
+            .orElseThrow(() -> {
+                log.info("Product not found for deletion with UUID: {}", productUuid);
+                return new ProductNotFoundException(productUuid);
+            });
 
-    log.info("Found {} products in category: {}", products.size(), category);
-    return productMapper.toProductListDto(products);
-  }
+        productRepository.delete(product);
+        log.info("Product deleted successfully with UUID: {}", productUuid);
+    }
+
+    @Transactional(readOnly = true)
+    public ProductListDto getProductsByCategory(String category) {
+        log.info("Fetching products by category: {}", category);
+
+        List<ProductEntity> products = productRepository.findByCategoryName(category);
+        log.info("Found {} products in category: {}", products.size(), category);
+        
+        return productMapper.toProductListDto(products);
+    }
+
+    @Transactional(readOnly = true)
+    public List<CosmicProductProjection> getCosmicProducts() {
+        log.info("Fetching cosmic products");
+        return productRepository.findCosmicProducts();
+    }
 }
