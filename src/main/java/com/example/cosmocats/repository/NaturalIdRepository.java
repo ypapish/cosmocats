@@ -7,8 +7,7 @@ import org.springframework.data.repository.NoRepositoryBean;
 @NoRepositoryBean
 public interface NaturalIdRepository<T, ID> extends JpaRepository<T, ID> {
 
-    Optional<T> findByNaturalId(ID naturalId);
+  Optional<T> findByNaturalId(ID naturalId);
 
-    void deleteByNaturalId(ID naturalId);
-
+  void deleteByNaturalId(ID naturalId);
 }

@@ -37,7 +37,7 @@ databaseChangeLog:
             tableName: category
             columnNames: name
             constraintName: uq_category_name
-        
+
         - addUniqueConstraint:
             tableName: category
             columnNames: category_uuid

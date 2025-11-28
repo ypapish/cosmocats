@@ -1,8 +1,13 @@
 package com.example.cosmocats.controller;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 import com.example.cosmocats.dto.CategoryDto;
 import com.example.cosmocats.service.CategoryService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.List;
+import java.util.UUID;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,260 +18,251 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.List;
-import java.util.UUID;
-
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
 @WebMvcTest(CategoryController.class)
 class CategoryControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+  @Autowired private MockMvc mockMvc;
 
-    @MockBean
-    private CategoryService categoryService;
+  @MockBean private CategoryService categoryService;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+  @Autowired private ObjectMapper objectMapper;
 
-    private CategoryDto testCategoryDto;
-    private UUID categoryId;
+  private CategoryDto testCategoryDto;
+  private UUID categoryId;
 
-    @BeforeEach
-    void setUp() {
-        categoryId = UUID.randomUUID();
-        
-        testCategoryDto = CategoryDto.builder()
-                .categoryId(categoryId)
-                .name("Galactic Supplies")
-                .build();
-    }
+  @BeforeEach
+  void setUp() {
+    categoryId = UUID.randomUUID();
 
-    @Test
-    @SneakyThrows
-    void getCategoryById_WithValidId_ShouldReturnCategory() {
-        Mockito.when(categoryService.getCategoryById(categoryId))
-                .thenReturn(testCategoryDto);
+    testCategoryDto =
+        CategoryDto.builder().categoryId(categoryId).name("Galactic Supplies").build();
+  }
 
-        mockMvc.perform(get("/api/v1/categories/{id}", categoryId))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.categoryId").value(categoryId.toString()))
-                .andExpect(jsonPath("$.name").value("Galactic Supplies"));
-    }
+  @Test
+  @SneakyThrows
+  void getCategoryById_WithValidId_ShouldReturnCategory() {
+    Mockito.when(categoryService.getCategoryById(categoryId)).thenReturn(testCategoryDto);
 
-    @Test
-    @SneakyThrows
-    void getCategoryById_WithNonExistingId_ShouldReturnNotFound() {
-        UUID nonExistingId = UUID.randomUUID();
-        Mockito.when(categoryService.getCategoryById(nonExistingId))
-                .thenThrow(new RuntimeException("Category not found"));
+    mockMvc
+        .perform(get("/api/v1/categories/{id}", categoryId))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.categoryId").value(categoryId.toString()))
+        .andExpect(jsonPath("$.name").value("Galactic Supplies"));
+  }
 
-        mockMvc.perform(get("/api/v1/categories/{id}", nonExistingId))
-                .andExpect(status().isNotFound());
-    }
+  @Test
+  @SneakyThrows
+  void getCategoryById_WithNonExistingId_ShouldReturnNotFound() {
+    UUID nonExistingId = UUID.randomUUID();
+    Mockito.when(categoryService.getCategoryById(nonExistingId))
+        .thenThrow(new RuntimeException("Category not found"));
 
-    @Test
-    @SneakyThrows
-    void getAllCategories_ShouldReturnCategoryList() {
-        CategoryDto secondCategory = CategoryDto.builder()
-                .categoryId(UUID.randomUUID())
-                .name("Space Equipment")
-                .build();
+    mockMvc.perform(get("/api/v1/categories/{id}", nonExistingId)).andExpect(status().isNotFound());
+  }
 
-        Mockito.when(categoryService.getAllCategories())
-                .thenReturn(List.of(testCategoryDto, secondCategory));
+  @Test
+  @SneakyThrows
+  void getAllCategories_ShouldReturnCategoryList() {
+    CategoryDto secondCategory =
+        CategoryDto.builder().categoryId(UUID.randomUUID()).name("Space Equipment").build();
 
-        mockMvc.perform(get("/api/v1/categories"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[0].name").value("Galactic Supplies"))
-                .andExpect(jsonPath("$[1].name").value("Space Equipment"));
-    }
+    Mockito.when(categoryService.getAllCategories())
+        .thenReturn(List.of(testCategoryDto, secondCategory));
 
-    @Test
-    @SneakyThrows
-    void getAllCategories_WhenNoCategories_ShouldReturnEmptyList() {
-        Mockito.when(categoryService.getAllCategories())
-                .thenReturn(List.of());
+    mockMvc
+        .perform(get("/api/v1/categories"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(2))
+        .andExpect(jsonPath("$[0].name").value("Galactic Supplies"))
+        .andExpect(jsonPath("$[1].name").value("Space Equipment"));
+  }
 
-        mockMvc.perform(get("/api/v1/categories"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(0));
-    }
+  @Test
+  @SneakyThrows
+  void getAllCategories_WhenNoCategories_ShouldReturnEmptyList() {
+    Mockito.when(categoryService.getAllCategories()).thenReturn(List.of());
 
-    @Test
-    @SneakyThrows
-    void getCategoryByName_WithValidName_ShouldReturnCategory() {
-        Mockito.when(categoryService.getCategoryByName("Galactic Supplies"))
-                .thenReturn(testCategoryDto);
+    mockMvc
+        .perform(get("/api/v1/categories"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(0));
+  }
 
-        mockMvc.perform(get("/api/v1/categories/search/{name}", "Galactic Supplies"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Galactic Supplies"))
-                .andExpect(jsonPath("$.categoryId").value(categoryId.toString()));
-    }
+  @Test
+  @SneakyThrows
+  void getCategoryByName_WithValidName_ShouldReturnCategory() {
+    Mockito.when(categoryService.getCategoryByName("Galactic Supplies"))
+        .thenReturn(testCategoryDto);
 
-    @Test
-    @SneakyThrows
-    void getCategoryByName_WithNonExistingName_ShouldReturnNotFound() {
-        String nonExistingName = "NonExistingCategory";
-        Mockito.when(categoryService.getCategoryByName(nonExistingName))
-                .thenThrow(new RuntimeException("Category not found"));
+    mockMvc
+        .perform(get("/api/v1/categories/search/{name}", "Galactic Supplies"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.name").value("Galactic Supplies"))
+        .andExpect(jsonPath("$.categoryId").value(categoryId.toString()));
+  }
 
-        mockMvc.perform(get("/api/v1/categories/search/{name}", nonExistingName))
-                .andExpect(status().isNotFound());
-    }
+  @Test
+  @SneakyThrows
+  void getCategoryByName_WithNonExistingName_ShouldReturnNotFound() {
+    String nonExistingName = "NonExistingCategory";
+    Mockito.when(categoryService.getCategoryByName(nonExistingName))
+        .thenThrow(new RuntimeException("Category not found"));
 
-    @Test
-    @SneakyThrows
-    void createCategory_WithValidData_ShouldReturnCreatedCategory() {
-        CategoryDto newCategoryDto = CategoryDto.builder()
-                .name("New Category")
-                .build();
+    mockMvc
+        .perform(get("/api/v1/categories/search/{name}", nonExistingName))
+        .andExpect(status().isNotFound());
+  }
 
-        CategoryDto createdCategoryDto = CategoryDto.builder()
-                .categoryId(categoryId)
-                .name("New Category")
-                .build();
+  @Test
+  @SneakyThrows
+  void createCategory_WithValidData_ShouldReturnCreatedCategory() {
+    CategoryDto newCategoryDto = CategoryDto.builder().name("New Category").build();
 
-        Mockito.when(categoryService.createCategory(Mockito.any(CategoryDto.class)))
-                .thenReturn(createdCategoryDto);
+    CategoryDto createdCategoryDto =
+        CategoryDto.builder().categoryId(categoryId).name("New Category").build();
 
-        mockMvc.perform(post("/api/v1/categories")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(newCategoryDto)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.categoryId").exists())
-                .andExpect(jsonPath("$.name").value("New Category"));
-    }
+    Mockito.when(categoryService.createCategory(Mockito.any(CategoryDto.class)))
+        .thenReturn(createdCategoryDto);
 
-    @Test
-    @SneakyThrows
-    void createCategory_WithInvalidData_ShouldReturnBadRequest() {
-        CategoryDto invalidCategoryDto = CategoryDto.builder()
-                .name("Ab")
-                .build();
+    mockMvc
+        .perform(
+            post("/api/v1/categories")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(newCategoryDto)))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.categoryId").exists())
+        .andExpect(jsonPath("$.name").value("New Category"));
+  }
 
-        mockMvc.perform(post("/api/v1/categories")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalidCategoryDto)))
-                .andExpect(status().isBadRequest());
-    }
+  @Test
+  @SneakyThrows
+  void createCategory_WithInvalidData_ShouldReturnBadRequest() {
+    CategoryDto invalidCategoryDto = CategoryDto.builder().name("Ab").build();
 
-    @Test
-    @SneakyThrows
-    void createCategory_WithDuplicateName_ShouldReturnConflict() {
-        CategoryDto duplicateCategoryDto = CategoryDto.builder()
-                .name("Duplicate Category")
-                .build();
+    mockMvc
+        .perform(
+            post("/api/v1/categories")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidCategoryDto)))
+        .andExpect(status().isBadRequest());
+  }
 
-        Mockito.when(categoryService.createCategory(Mockito.any(CategoryDto.class)))
-                .thenThrow(new RuntimeException("Category already exists"));
+  @Test
+  @SneakyThrows
+  void createCategory_WithDuplicateName_ShouldReturnConflict() {
+    CategoryDto duplicateCategoryDto = CategoryDto.builder().name("Duplicate Category").build();
 
-        mockMvc.perform(post("/api/v1/categories")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(duplicateCategoryDto)))
-                .andExpect(status().isConflict());
-    }
+    Mockito.when(categoryService.createCategory(Mockito.any(CategoryDto.class)))
+        .thenThrow(new RuntimeException("Category already exists"));
 
-    @Test
-    @SneakyThrows
-    void updateCategory_WithValidData_ShouldReturnUpdatedCategory() {
-        CategoryDto updateDto = CategoryDto.builder()
-                .name("Updated Galactic Supplies")
-                .build();
+    mockMvc
+        .perform(
+            post("/api/v1/categories")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(duplicateCategoryDto)))
+        .andExpect(status().isConflict());
+  }
 
-        CategoryDto updatedCategoryDto = CategoryDto.builder()
-                .categoryId(categoryId)
-                .name("Updated Galactic Supplies")
-                .build();
+  @Test
+  @SneakyThrows
+  void updateCategory_WithValidData_ShouldReturnUpdatedCategory() {
+    CategoryDto updateDto = CategoryDto.builder().name("Updated Galactic Supplies").build();
 
-        Mockito.when(categoryService.updateCategory(Mockito.eq(categoryId), Mockito.any(CategoryDto.class)))
-                .thenReturn(updatedCategoryDto);
+    CategoryDto updatedCategoryDto =
+        CategoryDto.builder().categoryId(categoryId).name("Updated Galactic Supplies").build();
 
-        mockMvc.perform(put("/api/v1/categories/{id}", categoryId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateDto)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Updated Galactic Supplies"))
-                .andExpect(jsonPath("$.categoryId").value(categoryId.toString()));
-    }
+    Mockito.when(
+            categoryService.updateCategory(Mockito.eq(categoryId), Mockito.any(CategoryDto.class)))
+        .thenReturn(updatedCategoryDto);
 
-    @Test
-    @SneakyThrows
-    void updateCategory_WithNonExistingId_ShouldReturnNotFound() {
-        UUID nonExistingId = UUID.randomUUID();
-        CategoryDto updateDto = CategoryDto.builder()
-                .name("Updated Name")
-                .build();
+    mockMvc
+        .perform(
+            put("/api/v1/categories/{id}", categoryId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateDto)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.name").value("Updated Galactic Supplies"))
+        .andExpect(jsonPath("$.categoryId").value(categoryId.toString()));
+  }
 
-        Mockito.when(categoryService.updateCategory(Mockito.eq(nonExistingId), Mockito.any(CategoryDto.class)))
-                .thenThrow(new RuntimeException("Category not found"));
+  @Test
+  @SneakyThrows
+  void updateCategory_WithNonExistingId_ShouldReturnNotFound() {
+    UUID nonExistingId = UUID.randomUUID();
+    CategoryDto updateDto = CategoryDto.builder().name("Updated Name").build();
 
-        mockMvc.perform(put("/api/v1/categories/{id}", nonExistingId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateDto)))
-                .andExpect(status().isNotFound());
-    }
+    Mockito.when(
+            categoryService.updateCategory(
+                Mockito.eq(nonExistingId), Mockito.any(CategoryDto.class)))
+        .thenThrow(new RuntimeException("Category not found"));
 
-    @Test
-    @SneakyThrows
-    void updateCategory_WithInvalidData_ShouldReturnBadRequest() {
-        CategoryDto invalidUpdateDto = CategoryDto.builder()
-                .name("A")
-                .build();
+    mockMvc
+        .perform(
+            put("/api/v1/categories/{id}", nonExistingId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateDto)))
+        .andExpect(status().isNotFound());
+  }
 
-        mockMvc.perform(put("/api/v1/categories/{id}", categoryId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalidUpdateDto)))
-                .andExpect(status().isBadRequest());
-    }
+  @Test
+  @SneakyThrows
+  void updateCategory_WithInvalidData_ShouldReturnBadRequest() {
+    CategoryDto invalidUpdateDto = CategoryDto.builder().name("A").build();
 
-    @Test
-    @SneakyThrows
-    void deleteCategory_WithValidId_ShouldReturnNoContent() {
-        Mockito.doNothing().when(categoryService).deleteCategory(categoryId);
+    mockMvc
+        .perform(
+            put("/api/v1/categories/{id}", categoryId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidUpdateDto)))
+        .andExpect(status().isBadRequest());
+  }
 
-        mockMvc.perform(delete("/api/v1/categories/{id}", categoryId))
-                .andExpect(status().isNoContent());
+  @Test
+  @SneakyThrows
+  void deleteCategory_WithValidId_ShouldReturnNoContent() {
+    Mockito.doNothing().when(categoryService).deleteCategory(categoryId);
 
-        Mockito.verify(categoryService).deleteCategory(categoryId);
-    }
+    mockMvc
+        .perform(delete("/api/v1/categories/{id}", categoryId))
+        .andExpect(status().isNoContent());
 
-    @Test
-    @SneakyThrows
-    void deleteCategory_WithNonExistingId_ShouldReturnNotFound() {
-        UUID nonExistingId = UUID.randomUUID();
-        Mockito.doThrow(new RuntimeException("Category not found"))
-                .when(categoryService).deleteCategory(nonExistingId);
+    Mockito.verify(categoryService).deleteCategory(categoryId);
+  }
 
-        mockMvc.perform(delete("/api/v1/categories/{id}", nonExistingId))
-                .andExpect(status().isNotFound());
+  @Test
+  @SneakyThrows
+  void deleteCategory_WithNonExistingId_ShouldReturnNotFound() {
+    UUID nonExistingId = UUID.randomUUID();
+    Mockito.doThrow(new RuntimeException("Category not found"))
+        .when(categoryService)
+        .deleteCategory(nonExistingId);
 
-        Mockito.verify(categoryService).deleteCategory(nonExistingId);
-    }
+    mockMvc
+        .perform(delete("/api/v1/categories/{id}", nonExistingId))
+        .andExpect(status().isNotFound());
 
-    @Test
-    @SneakyThrows
-    void getCategoriesCount_ShouldReturnCount() {
-        Mockito.when(categoryService.countCategories())
-                .thenReturn(5L);
+    Mockito.verify(categoryService).deleteCategory(nonExistingId);
+  }
 
-        mockMvc.perform(get("/api/v1/categories/count"))
-                .andExpect(status().isOk())
-                .andExpect(content().string("5"));
-    }
+  @Test
+  @SneakyThrows
+  void getCategoriesCount_ShouldReturnCount() {
+    Mockito.when(categoryService.countCategories()).thenReturn(5L);
 
-    @Test
-    @SneakyThrows
-    void getCategoriesCount_WhenZeroCategories_ShouldReturnZero() {
-        Mockito.when(categoryService.countCategories())
-                .thenReturn(0L);
+    mockMvc
+        .perform(get("/api/v1/categories/count"))
+        .andExpect(status().isOk())
+        .andExpect(content().string("5"));
+  }
 
-        mockMvc.perform(get("/api/v1/categories/count"))
-                .andExpect(status().isOk())
-                .andExpect(content().string("0"));
-    }
+  @Test
+  @SneakyThrows
+  void getCategoriesCount_WhenZeroCategories_ShouldReturnZero() {
+    Mockito.when(categoryService.countCategories()).thenReturn(0L);
+
+    mockMvc
+        .perform(get("/api/v1/categories/count"))
+        .andExpect(status().isOk())
+        .andExpect(content().string("0"));
+  }
 }
