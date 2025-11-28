@@ -23,11 +23,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class CategoryServiceTest {
 
-  @Mock private CategoryRepository categoryRepository;
+  @Mock
+  private CategoryRepository categoryRepository;
 
-  @Mock private CategoryMapper categoryMapper;
+  @Mock
+  private CategoryMapper categoryMapper;
 
-  @InjectMocks private CategoryService categoryService;
+  @InjectMocks
+  private CategoryService categoryService;
 
   private UUID categoryId;
   private CategoryEntity testCategoryEntity;

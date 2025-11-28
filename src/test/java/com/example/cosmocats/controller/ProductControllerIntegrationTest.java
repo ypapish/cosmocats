@@ -21,11 +21,14 @@ import org.springframework.test.web.servlet.MockMvc;
 @AutoConfigureMockMvc
 class ProductControllerIntegrationTest extends AbstractIt {
 
-  @Autowired private MockMvc mockMvc;
+  @Autowired
+  private MockMvc mockMvc;
 
-  @Autowired private ProductRepository productRepository;
+  @Autowired
+  private ProductRepository productRepository;
 
-  @Autowired private CategoryRepository categoryRepository;
+  @Autowired
+  private CategoryRepository categoryRepository;
 
   private CategoryEntity electronicsCategory;
   private CategoryEntity booksCategory;
