@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.UUID;
@@ -38,6 +39,7 @@ class CategoryControllerIntegrationTest extends AbstractIt {
 
     @Test
     @SneakyThrows
+    @WithMockUser(roles = {"ADMIN"})
     void createCategory_WithValidData_ShouldCreateCategory() {
         CategoryDto categoryDto = CategoryDto.builder()
                 .name("Galactic Supplies")
@@ -56,6 +58,7 @@ class CategoryControllerIntegrationTest extends AbstractIt {
 
     @Test
     @SneakyThrows
+    @WithMockUser(roles = {"ADMIN"})
     void createCategory_WithDuplicateName_ShouldReturnConflict() {
         CategoryEntity existingCategory = CategoryEntity.builder()
                 .categoryUuid(UUID.randomUUID())
@@ -78,6 +81,7 @@ class CategoryControllerIntegrationTest extends AbstractIt {
 
     @Test
     @SneakyThrows
+    @WithMockUser(roles = {"ADMIN"})
     void createCategory_WithInvalidName_ShouldReturnBadRequest() {
         CategoryDto invalidCategory = CategoryDto.builder()
                 .name("Ab")
@@ -172,6 +176,7 @@ class CategoryControllerIntegrationTest extends AbstractIt {
 
     @Test
     @SneakyThrows
+    @WithMockUser(roles = {"ADMIN"})
     void updateCategory_WithValidData_ShouldUpdateCategory() {
         CategoryEntity existingCategory = CategoryEntity.builder()
                 .categoryUuid(UUID.randomUUID())
@@ -195,6 +200,7 @@ class CategoryControllerIntegrationTest extends AbstractIt {
 
     @Test
     @SneakyThrows
+    @WithMockUser(roles = {"ADMIN"})
     void updateCategory_WithNonExistingId_ShouldReturnNotFound() {
         UUID nonExistingId = UUID.randomUUID();
         CategoryDto updateDto = CategoryDto.builder()
@@ -209,6 +215,7 @@ class CategoryControllerIntegrationTest extends AbstractIt {
 
     @Test
     @SneakyThrows
+    @WithMockUser(roles = {"ADMIN"})
     void updateCategory_WithDuplicateName_ShouldReturnConflict() {
         CategoryEntity category1 = CategoryEntity.builder()
                 .categoryUuid(UUID.randomUUID())
@@ -233,6 +240,7 @@ class CategoryControllerIntegrationTest extends AbstractIt {
 
     @Test
     @SneakyThrows
+    @WithMockUser(roles = {"ADMIN"})
     void deleteCategory_WithExistingId_ShouldDeleteCategory() {
         CategoryEntity category = CategoryEntity.builder()
                 .categoryUuid(UUID.randomUUID())
@@ -248,6 +256,7 @@ class CategoryControllerIntegrationTest extends AbstractIt {
 
     @Test
     @SneakyThrows
+    @WithMockUser(roles = {"ADMIN"})
     void deleteCategory_WithNonExistingId_ShouldReturnNotFound() {
         UUID nonExistingId = UUID.randomUUID();
 
@@ -282,5 +291,33 @@ class CategoryControllerIntegrationTest extends AbstractIt {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().string("0"));
+    }
+
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(roles = {"USER"})
+    void createCategory_WithUserRole_ShouldReturnForbidden() {
+        CategoryDto categoryDto = CategoryDto.builder()
+                .name("User Tried Category")
+                .build();
+
+        mockMvc.perform(post("/api/v1/categories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(categoryDto)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @SneakyThrows
+    void createCategory_WithoutAuthentication_ShouldReturnUnauthorized() {
+        CategoryDto categoryDto = CategoryDto.builder()
+                .name("Unauthorized Category")
+                .build();
+
+        mockMvc.perform(post("/api/v1/categories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(categoryDto)))
+                .andExpect(status().isUnauthorized());
     }
 }

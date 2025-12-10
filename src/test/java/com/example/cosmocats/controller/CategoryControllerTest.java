@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
@@ -121,6 +122,7 @@ class CategoryControllerTest {
 
     @Test
     @SneakyThrows
+    @WithMockUser(roles = {"ADMIN"})
     void createCategory_WithValidData_ShouldReturnCreatedCategory() {
         CategoryDto newCategoryDto = CategoryDto.builder()
                 .name("New Category")
@@ -144,6 +146,7 @@ class CategoryControllerTest {
 
     @Test
     @SneakyThrows
+    @WithMockUser(roles = {"ADMIN"})
     void createCategory_WithInvalidData_ShouldReturnBadRequest() {
         CategoryDto invalidCategoryDto = CategoryDto.builder()
                 .name("Ab")
@@ -157,6 +160,7 @@ class CategoryControllerTest {
 
     @Test
     @SneakyThrows
+    @WithMockUser(roles = {"ADMIN"})
     void createCategory_WithDuplicateName_ShouldReturnConflict() {
         CategoryDto duplicateCategoryDto = CategoryDto.builder()
                 .name("Duplicate Category")
@@ -173,6 +177,7 @@ class CategoryControllerTest {
 
     @Test
     @SneakyThrows
+    @WithMockUser(roles = {"ADMIN"})
     void updateCategory_WithValidData_ShouldReturnUpdatedCategory() {
         CategoryDto updateDto = CategoryDto.builder()
                 .name("Updated Galactic Supplies")
@@ -196,6 +201,7 @@ class CategoryControllerTest {
 
     @Test
     @SneakyThrows
+    @WithMockUser(roles = {"ADMIN"})
     void updateCategory_WithNonExistingId_ShouldReturnNotFound() {
         UUID nonExistingId = UUID.randomUUID();
         CategoryDto updateDto = CategoryDto.builder()
@@ -213,6 +219,7 @@ class CategoryControllerTest {
 
     @Test
     @SneakyThrows
+    @WithMockUser(roles = {"ADMIN"})
     void updateCategory_WithInvalidData_ShouldReturnBadRequest() {
         CategoryDto invalidUpdateDto = CategoryDto.builder()
                 .name("A")
@@ -226,6 +233,7 @@ class CategoryControllerTest {
 
     @Test
     @SneakyThrows
+    @WithMockUser(roles = {"ADMIN"})
     void deleteCategory_WithValidId_ShouldReturnNoContent() {
         Mockito.doNothing().when(categoryService).deleteCategory(categoryId);
 
@@ -237,6 +245,7 @@ class CategoryControllerTest {
 
     @Test
     @SneakyThrows
+    @WithMockUser(roles = {"ADMIN"})
     void deleteCategory_WithNonExistingId_ShouldReturnNotFound() {
         UUID nonExistingId = UUID.randomUUID();
         Mockito.doThrow(new RuntimeException("Category not found"))

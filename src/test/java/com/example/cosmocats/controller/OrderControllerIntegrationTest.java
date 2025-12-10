@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
@@ -83,6 +84,7 @@ class OrderControllerIntegrationTest extends AbstractIt {
 
     @Test
     @SneakyThrows
+    @WithMockUser(roles = {"USER"})
     void createOrder_WithValidData_ShouldCreateOrder() {
         ProductDto productDto1 = ProductDto.builder()
                 .productId(testProduct1.getProductUuid())
@@ -115,6 +117,7 @@ class OrderControllerIntegrationTest extends AbstractIt {
 
     @Test
     @SneakyThrows
+    @WithMockUser(roles = {"USER"})
     void createOrder_WithMultipleProducts_ShouldCreateOrder() {
         ProductDto productDto1 = ProductDto.builder()
                 .productId(testProduct1.getProductUuid())
@@ -160,6 +163,7 @@ class OrderControllerIntegrationTest extends AbstractIt {
 
     @Test
     @SneakyThrows
+    @WithMockUser(roles = {"USER"})
     void createOrder_WithNonExistingProduct_ShouldReturnBadRequest() {
         UUID nonExistingProductId = UUID.randomUUID();
 
@@ -189,6 +193,7 @@ class OrderControllerIntegrationTest extends AbstractIt {
 
     @Test
     @SneakyThrows
+    @WithMockUser(roles = {"USER"})
     void getOrderById_WithExistingId_ShouldReturnOrder() {
         OrderEntity order = OrderEntity.builder()
                 .orderUuid(UUID.randomUUID())
@@ -205,6 +210,7 @@ class OrderControllerIntegrationTest extends AbstractIt {
 
     @Test
     @SneakyThrows
+    @WithMockUser(roles = {"USER"})
     void getOrderById_WithNonExistingId_ShouldReturnNotFound() {
         UUID nonExistingId = UUID.randomUUID();
 
@@ -216,6 +222,7 @@ class OrderControllerIntegrationTest extends AbstractIt {
 
     @Test
     @SneakyThrows
+    @WithMockUser(roles = {"ADMIN"})
     void getAllOrders_WithOrders_ShouldReturnAllOrders() {
         OrderEntity order1 = OrderEntity.builder()
                 .orderUuid(UUID.randomUUID())
@@ -240,6 +247,7 @@ class OrderControllerIntegrationTest extends AbstractIt {
 
     @Test
     @SneakyThrows
+    @WithMockUser(roles = {"ADMIN"})
     void getAllOrders_WhenNoOrders_ShouldReturnEmptyList() {
         mockMvc.perform(get("/api/v1/orders")
                         .accept(MediaType.APPLICATION_JSON))
@@ -249,6 +257,7 @@ class OrderControllerIntegrationTest extends AbstractIt {
 
     @Test
     @SneakyThrows
+    @WithMockUser(roles = {"ADMIN"})
     void updateOrder_WithValidData_ShouldUpdateOrder() {
         OrderEntity existingOrder = OrderEntity.builder()
                 .orderUuid(UUID.randomUUID())
@@ -287,6 +296,7 @@ class OrderControllerIntegrationTest extends AbstractIt {
 
     @Test
     @SneakyThrows
+    @WithMockUser(roles = {"ADMIN"})
     void updateOrder_WithNonExistingId_ShouldReturnNotFound() {
         UUID nonExistingId = UUID.randomUUID();
 
@@ -302,6 +312,7 @@ class OrderControllerIntegrationTest extends AbstractIt {
 
     @Test
     @SneakyThrows
+    @WithMockUser(roles = {"ADMIN"})
     void deleteOrder_WithExistingId_ShouldDeleteOrder() {
         OrderEntity order = OrderEntity.builder()
                 .orderUuid(UUID.randomUUID())
@@ -317,6 +328,7 @@ class OrderControllerIntegrationTest extends AbstractIt {
 
     @Test
     @SneakyThrows
+    @WithMockUser(roles = {"ADMIN"})
     void deleteOrder_WithNonExistingId_ShouldReturnNotFound() {
         UUID nonExistingId = UUID.randomUUID();
 
@@ -326,6 +338,7 @@ class OrderControllerIntegrationTest extends AbstractIt {
 
     @Test
     @SneakyThrows
+    @WithMockUser(roles = {"USER"})
     void createOrder_WithZeroAmount_ShouldReturnBadRequest() {
         ProductDto productDto = ProductDto.builder()
                 .productId(testProduct1.getProductUuid())
@@ -349,5 +362,41 @@ class OrderControllerIntegrationTest extends AbstractIt {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(orderDto)))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(roles = {"USER"})
+    void getAllOrders_WithUserRole_ShouldReturnForbidden() {
+        mockMvc.perform(get("/api/v1/orders"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @SneakyThrows
+    void createOrder_WithoutAuthentication_ShouldReturnUnauthorized() {
+        OrderDto orderDto = OrderDto.builder()
+                .totalPrice(100.0)
+                .build();
+
+        mockMvc.perform(post("/api/v1/orders")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(orderDto)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(roles = {"USER"})
+    void updateOrder_WithUserRole_ShouldReturnForbidden() {
+        UUID orderId = UUID.randomUUID();
+        OrderDto updateDto = OrderDto.builder()
+                .totalPrice(100.0)
+                .build();
+
+        mockMvc.perform(put("/api/v1/orders/{id}", orderId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateDto)))
+                .andExpect(status().isForbidden());
     }
 }

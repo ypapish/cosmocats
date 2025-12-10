@@ -36,3 +36,11 @@ application:
     toggles:
       cosmoCats: true
       kittyProducts: false
+  security:
+    security:
+      jwt:
+        secret: ${JWT_SECRET:super-secret-jwt-key-for-cosmo-cats-2025}
+        algorithm: HS256
+      api-key:
+        header-name: X-Cosmo-Key
+        valid-keys: ${API_VALID_KEYS:cosmo-key-123,admin-key-456,test-key-789}

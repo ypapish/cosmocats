@@ -1,0 +1,17 @@
+spring:
+  profiles:
+    include: local
+  security:
+    enabled: false
+
+auth:
+  claims:
+    sub: test-user
+    roles: [ADMIN, USER]
+    preferred_username: test-admin
+
+application:
+  feature:
+    toggles:
+      cosmoCats: true
+      kittyProducts: false

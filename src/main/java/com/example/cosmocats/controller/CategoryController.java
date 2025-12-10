@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,30 +20,35 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CategoryDto> createCategory(@Valid @RequestBody CategoryDto categoryDto) {
         CategoryDto createdCategory = categoryService.createCategory(categoryDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdCategory);
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<CategoryDto> getCategoryById(@PathVariable UUID id) {
         CategoryDto category = categoryService.getCategoryById(id);
         return ResponseEntity.ok(category);
     }
 
     @GetMapping
+    @PreAuthorize("permitAll()")
     public ResponseEntity<List<CategoryDto>> getAllCategories() {
         List<CategoryDto> categories = categoryService.getAllCategories();
         return ResponseEntity.ok(categories);
     }
 
     @GetMapping("/search/{name}")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<CategoryDto> getCategoryByName(@PathVariable String name) {
         CategoryDto category = categoryService.getCategoryByName(name);
         return ResponseEntity.ok(category);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CategoryDto> updateCategory(
             @PathVariable UUID id, @Valid @RequestBody CategoryDto updateDto) {
         CategoryDto updatedCategory = categoryService.updateCategory(id, updateDto);
@@ -50,12 +56,14 @@ public class CategoryController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteCategory(@PathVariable UUID id) {
         categoryService.deleteCategory(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/count")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<Long> getCategoriesCount() {
         long count = categoryService.countCategories();
         return ResponseEntity.ok(count);

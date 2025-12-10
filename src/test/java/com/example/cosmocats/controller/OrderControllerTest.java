@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
@@ -64,6 +65,7 @@ class OrderControllerTest {
 
     @Test
     @SneakyThrows
+    @WithMockUser(roles = {"USER"})
     void getOrderById_WithValidId_ShouldReturnOrder() {
         Mockito.when(orderService.getOrderById(orderId))
                 .thenReturn(testOrderDto);
@@ -77,6 +79,7 @@ class OrderControllerTest {
 
     @Test
     @SneakyThrows
+    @WithMockUser(roles = {"USER"})
     void getOrderById_WithNonExistingId_ShouldReturnNotFound() {
         UUID nonExistingId = UUID.randomUUID();
         Mockito.when(orderService.getOrderById(nonExistingId))
@@ -88,6 +91,7 @@ class OrderControllerTest {
 
     @Test
     @SneakyThrows
+    @WithMockUser(roles = {"ADMIN"})
     void getAllOrders_ShouldReturnOrderList() {
         Mockito.when(orderService.getAllOrders())
                 .thenReturn(List.of(testOrderDto));
@@ -101,6 +105,7 @@ class OrderControllerTest {
 
     @Test
     @SneakyThrows
+    @WithMockUser(roles = {"ADMIN"})
     void getAllOrders_WhenNoOrders_ShouldReturnEmptyList() {
         Mockito.when(orderService.getAllOrders())
                 .thenReturn(List.of());
@@ -112,6 +117,7 @@ class OrderControllerTest {
 
     @Test
     @SneakyThrows
+    @WithMockUser(roles = {"USER"})
     void createOrder_WithValidData_ShouldReturnCreatedOrder() {
         Mockito.when(orderService.createOrder(Mockito.any(OrderDto.class)))
                 .thenReturn(testOrderDto);
@@ -127,6 +133,7 @@ class OrderControllerTest {
 
     @Test
     @SneakyThrows
+    @WithMockUser(roles = {"USER"})
     void createOrder_WithInvalidData_ShouldReturnBadRequest() {
         OrderDto invalidOrderDto = OrderDto.builder()
                 .id(orderId)
@@ -141,6 +148,7 @@ class OrderControllerTest {
 
     @Test
     @SneakyThrows
+    @WithMockUser(roles = {"ADMIN"})
     void updateOrder_WithValidData_ShouldReturnUpdatedOrder() {
         OrderDto updatedOrderDto = OrderDto.builder()
                 .id(orderId)
@@ -161,6 +169,7 @@ class OrderControllerTest {
 
     @Test
     @SneakyThrows
+    @WithMockUser(roles = {"ADMIN"})
     void updateOrder_WithNonExistingId_ShouldReturnNotFound() {
         UUID nonExistingId = UUID.randomUUID();
         Mockito.when(orderService.updateOrder(Mockito.eq(nonExistingId), Mockito.any(OrderDto.class)))
@@ -174,6 +183,7 @@ class OrderControllerTest {
 
     @Test
     @SneakyThrows
+    @WithMockUser(roles = {"ADMIN"})
     void deleteOrder_WithValidId_ShouldReturnNoContent() {
         Mockito.doNothing().when(orderService).deleteOrder(orderId);
 
@@ -185,6 +195,7 @@ class OrderControllerTest {
 
     @Test
     @SneakyThrows
+    @WithMockUser(roles = {"ADMIN"})
     void deleteOrder_WithNonExistingId_ShouldReturnNotFound() {
         UUID nonExistingId = UUID.randomUUID();
         Mockito.doThrow(new RuntimeException("Order not found"))
@@ -198,6 +209,7 @@ class OrderControllerTest {
 
     @Test
     @SneakyThrows
+    @WithMockUser(roles = {"USER"})
     void createOrder_WithInvalidOrderEntry_ShouldReturnBadRequest() {
         ProductDto productDto = ProductDto.builder()
                 .productId(productId)
@@ -226,6 +238,7 @@ class OrderControllerTest {
 
     @Test
     @SneakyThrows
+    @WithMockUser(roles = {"USER"})
     void createOrder_WithMissingRequiredFields_ShouldReturnBadRequest() {
         OrderDto invalidOrderDto = OrderDto.builder()
                 .id(null)
@@ -236,5 +249,31 @@ class OrderControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidOrderDto)))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @SneakyThrows
+    void getAllOrders_WithoutAuthentication_ShouldReturnUnauthorized() {
+        mockMvc.perform(get("/api/v1/orders"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(roles = {"USER"})
+    void getAllOrders_WithUserRole_ShouldReturnForbidden() {
+        mockMvc.perform(get("/api/v1/orders"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(roles = {"ADMIN"})
+    void getOrderById_WithAdminRole_ShouldReturnOrder() {
+        Mockito.when(orderService.getOrderById(orderId))
+                .thenReturn(testOrderDto);
+
+        mockMvc.perform(get("/api/v1/orders/{id}", orderId))
+                .andExpect(status().isOk());
     }
 }
