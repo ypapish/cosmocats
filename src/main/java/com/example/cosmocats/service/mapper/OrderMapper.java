@@ -1,9 +1,9 @@
 package com.example.cosmocats.service.mapper;
 
-import com.example.cosmocats.domain.order.Order;
-import com.example.cosmocats.domain.order.OrderEntry;
 import com.example.cosmocats.dto.order.OrderDto;
 import com.example.cosmocats.dto.order.OrderEntryDto;
+import com.example.cosmocats.entity.OrderEntity;
+import com.example.cosmocats.entity.OrderEntryEntity;
 import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -13,16 +13,16 @@ import org.mapstruct.Mapping;
     uses = {ProductMapper.class})
 public interface OrderMapper {
 
-  @Mapping(target = "id", source = "id")
+  @Mapping(target = "id", source = "orderUuid")
   @Mapping(target = "entries", source = "entries")
-  @Mapping(target = "totalPrice", source = "totalPrice")
-  OrderDto toOrderDto(Order order);
+  @Mapping(target = "totalPrice", expression = "java(order.getTotalPrice().doubleValue())")
+  OrderDto toOrderDto(OrderEntity order);
 
-  List<OrderDto> toOrderDtoList(List<Order> orders);
+  List<OrderDto> toOrderDtoList(List<OrderEntity> orders);
 
   @Mapping(target = "product", source = "product")
   @Mapping(target = "amount", source = "amount")
-  OrderEntryDto toOrderEntryDto(OrderEntry orderEntry);
+  OrderEntryDto toOrderEntryDto(OrderEntryEntity orderEntry);
 
-  List<OrderEntryDto> toOrderEntryDtoList(List<OrderEntry> orderEntries);
+  List<OrderEntryDto> toOrderEntryDtoList(List<OrderEntryEntity> orderEntries);
 }
