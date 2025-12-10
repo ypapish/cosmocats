@@ -1,0 +1,39 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-sequence-orders-id-seq
+      author: yana
+      changes:
+        - createSequence:
+            sequenceName: orders_id_seq
+            startValue: 1
+            incrementBy: 50
+
+  - changeSet:
+      id: create-table-orders
+      author: yana
+      changes:
+        - createTable:
+            tableName: orders
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: order_uuid
+                  type: UUID
+                  constraints:
+                    nullable: false
+                  defaultValueComputed: gen_random_uuid()
+              - column:
+                  name: total_price
+                  type: DECIMAL(10,2)
+                  constraints:
+                    nullable: false
+
+        - addUniqueConstraint:
+            tableName: orders
+            columnNames: order_uuid
+            constraintName: uq_orders_uuid

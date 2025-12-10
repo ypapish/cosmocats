@@ -1,0 +1,66 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-sequence-product-id-seq
+      author: yana
+      changes:
+        - createSequence:
+            sequenceName: product_id_seq
+            startValue: 1
+            incrementBy: 50
+
+  - changeSet:
+      id: create-table-product
+      author: yana
+      changes:
+        - createTable:
+            tableName: product
+            columns:
+              - column:
+                  name: product_id
+                  type: BIGINT
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: category_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_product_category
+                    references: category(category_id)
+              - column:
+                  name: name
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: VARCHAR(1000)
+              - column:
+                  name: price
+                  type: DECIMAL(10,2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: product_uuid
+                  type: UUID
+                  constraints:
+                    nullable: false
+                  defaultValueComputed: gen_random_uuid()
+
+        - addUniqueConstraint:
+            tableName: product
+            columnNames: category_id, name
+            constraintName: uq_product_category_name
+
+        - addUniqueConstraint:
+            tableName: product
+            columnNames: product_uuid
+            constraintName: uq_product_uuid
+
+        - createIndex:
+            indexName: idx_product_name
+            tableName: product
+            columns:
+              - column:
+                  name: name

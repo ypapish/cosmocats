@@ -1,350 +1,244 @@
 package com.example.cosmocats.controller;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import com.example.cosmocats.dto.product.ProductDto;
+import com.example.cosmocats.AbstractIt;
 import com.example.cosmocats.dto.product.ProductUpdateDto;
-import com.example.cosmocats.exception.ProductAlreadyExistsException;
-import com.example.cosmocats.exception.ProductNotFoundException;
-import com.example.cosmocats.service.ProductService;
+import com.example.cosmocats.entity.CategoryEntity;
+import com.example.cosmocats.entity.ProductEntity;
+import com.example.cosmocats.repository.CategoryRepository;
+import com.example.cosmocats.repository.ProductRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.UUID;
-import org.junit.jupiter.api.DisplayName;
+import lombok.SneakyThrows;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(AdminProductController.class)
-@DisplayName("Admin Product Controller Tests")
-class AdminProductControllerTest {
+import java.math.BigDecimal;
+import java.util.UUID;
 
-  private final UUID productId = UUID.fromString("550e8400-e29b-41d4-a716-446655440001");
+import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-  @Autowired
-  private MockMvc mockMvc;
+@AutoConfigureMockMvc
+class AdminProductControllerIntegrationTest extends AbstractIt {
 
-  @Autowired
-  private ObjectMapper objectMapper;
+    @Autowired
+    private MockMvc mockMvc;
 
-  @MockitoBean
-  private ProductService productService;
+    @Autowired
+    private ProductRepository productRepository;
 
-  @Test
-  @DisplayName("Should create product with valid data")
-  void createProduct_ShouldReturnCreated_WhenValidData() throws Exception {
-    ProductUpdateDto createDto =
-        ProductUpdateDto.builder()
-            .category("Electronics")
-            .name("Galaxy Phone")
-            .description("Advanced smartphone with cosmic features")
-            .price(999.99f)
-            .build();
+    @Autowired
+    private CategoryRepository categoryRepository;
 
-    ProductDto responseDto =
-        ProductDto.builder()
-            .productId(productId)
-            .category("Electronics")
-            .name("Galaxy Phone")
-            .description("Advanced smartphone with cosmic features")
-            .price(999.99f)
-            .build();
+    @Autowired
+    private ObjectMapper objectMapper;
 
-    when(productService.createProduct(any(ProductUpdateDto.class))).thenReturn(responseDto);
+    private CategoryEntity testCategory;
 
-    mockMvc
-        .perform(
-            post("/api/v1/admin/products")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(createDto)))
-        .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.productId").value(productId.toString()))
-        .andExpect(jsonPath("$.name").value("Galaxy Phone"))
-        .andExpect(jsonPath("$.category").value("Electronics"))
-        .andExpect(jsonPath("$.description").value("Advanced smartphone with cosmic features"))
-        .andExpect(jsonPath("$.price").value(999.99));
+    @BeforeEach
+    void setUp() {
+        productRepository.deleteAll();
+        categoryRepository.deleteAll();
 
-    verify(productService).createProduct(any(ProductUpdateDto.class));
-  }
+        testCategory = CategoryEntity.builder()
+                .categoryUuid(UUID.randomUUID())
+                .name("Electronics")
+                .build();
+        categoryRepository.save(testCategory);
+    }
 
-  @Test
-  @DisplayName("Should update product with valid data")
-  void updateProduct_ShouldReturnOk_WhenValidData() throws Exception {
-    ProductUpdateDto updateDto =
-        ProductUpdateDto.builder()
-            .category("Electronics")
-            .name("Updated Galaxy Phone")
-            .description("Updated description with cosmic enhancements")
-            .price(899.99f)
-            .build();
+    @Test
+    @SneakyThrows
+    void createProduct_WithValidData_ShouldCreateProduct() {
+        ProductUpdateDto createDto = ProductUpdateDto.builder()
+                .category("Electronics")
+                .name("Quantum Star Phone")
+                .description("Advanced smartphone with quantum processor")
+                .price(999.99f)
+                .build();
 
-    ProductDto responseDto =
-        ProductDto.builder()
-            .productId(productId)
-            .category("Electronics")
-            .name("Updated Galaxy Phone")
-            .description("Updated description with cosmic enhancements")
-            .price(899.99f)
-            .build();
+        mockMvc.perform(post("/api/v1/admin/products")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createDto)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.name").value("Quantum Star Phone"))
+                .andExpect(jsonPath("$.category").value("Electronics"))
+                .andExpect(jsonPath("$.price").value(999.99))
+                .andExpect(jsonPath("$.productId").exists());
 
-    when(productService.updateProduct(eq(productId), any(ProductUpdateDto.class)))
-        .thenReturn(responseDto);
+        assertEquals(1, productRepository.count());
+        assertTrue(productRepository.findByName("Quantum Star Phone").isPresent());
+    }
 
-    mockMvc
-        .perform(
-            put("/api/v1/admin/products/{id}", productId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(updateDto)))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.productId").value(productId.toString()))
-        .andExpect(jsonPath("$.name").value("Updated Galaxy Phone"))
-        .andExpect(jsonPath("$.category").value("Electronics"))
-        .andExpect(jsonPath("$.description").value("Updated description with cosmic enhancements"))
-        .andExpect(jsonPath("$.price").value(899.99));
+    @Test
+    @SneakyThrows
+    void createProduct_WithDuplicateName_ShouldReturnConflict() {
+        ProductEntity existingProduct = ProductEntity.builder()
+                .productUuid(UUID.randomUUID())
+                .category(testCategory)
+                .name("Galaxy Tablet")
+                .description("Existing product")
+                .price(BigDecimal.valueOf(499.99))
+                .build();
+        productRepository.save(existingProduct);
 
-    verify(productService).updateProduct(eq(productId), any(ProductUpdateDto.class));
-  }
+        ProductUpdateDto duplicateProduct = ProductUpdateDto.builder()
+                .category("Electronics")
+                .name("Galaxy Tablet")
+                .description("New product with same name")
+                .price(599.99f)
+                .build();
 
-  @Test
-  @DisplayName("Should delete product when product exists")
-  void deleteProduct_ShouldReturnNoContent_WhenProductExists() throws Exception {
-    doNothing().when(productService).deleteProduct(productId);
+        mockMvc.perform(post("/api/v1/admin/products")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(duplicateProduct)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.title").value("Product Already Exists"));
 
-    mockMvc
-        .perform(delete("/api/v1/admin/products/{id}", productId))
-        .andExpect(status().isNoContent());
+        assertEquals(1, productRepository.count());
+    }
 
-    verify(productService).deleteProduct(productId);
-  }
+    @Test
+    @SneakyThrows
+    void createProduct_WithNonExistingCategory_ShouldReturnBadRequest() {
+        ProductUpdateDto productDto = ProductUpdateDto.builder()
+                .category("NonExistingCategory")
+                .name("Cosmic Device")
+                .description("Test product")
+                .price(100.0f)
+                .build();
 
-  @Test
-  @DisplayName("Should return bad request when category is blank")
-  void createProduct_ShouldReturnBadRequest_WhenCategoryIsBlank() throws Exception {
-    ProductUpdateDto invalidDto =
-        ProductUpdateDto.builder()
-            .category("")
-            .name("Galaxy Phone")
-            .description("Advanced smartphone")
-            .price(999.99f)
-            .build();
+        mockMvc.perform(post("/api/v1/admin/products")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(productDto)))
+                .andExpect(status().isBadRequest());
+    }
 
-    mockMvc
-        .perform(
-            post("/api/v1/admin/products")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(invalidDto)))
-        .andExpect(status().isBadRequest());
+    @Test
+    @SneakyThrows
+    void createProduct_WithInvalidCosmicName_ShouldReturnBadRequest() {
+        ProductUpdateDto invalidProduct = ProductUpdateDto.builder()
+                .category("Electronics")
+                .name("Regular Phone")
+                .description("Regular phone without cosmic terms")
+                .price(100.0f)
+                .build();
 
-    verify(productService, never()).createProduct(any(ProductUpdateDto.class));
-  }
+        mockMvc.perform(post("/api/v1/admin/products")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidProduct)))
+                .andExpect(status().isBadRequest());
+    }
 
-  @Test
-  @DisplayName("Should return bad request when name is blank")
-  void createProduct_ShouldReturnBadRequest_WhenNameIsBlank() throws Exception {
-    ProductUpdateDto invalidDto =
-        ProductUpdateDto.builder()
-            .category("Electronics")
-            .name("") // Blank name
-            .description("Advanced smartphone")
-            .price(999.99f)
-            .build();
+    @Test
+    @SneakyThrows
+    void updateProduct_WithValidData_ShouldUpdateProduct() {
+        ProductEntity existingProduct = ProductEntity.builder()
+                .productUuid(UUID.randomUUID())
+                .category(testCategory)
+                .name("Old Star Phone")
+                .description("Old description")
+                .price(BigDecimal.valueOf(500.0))
+                .build();
+        ProductEntity savedProduct = productRepository.save(existingProduct);
 
-    mockMvc
-        .perform(
-            post("/api/v1/admin/products")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(invalidDto)))
-        .andExpect(status().isBadRequest());
+        ProductUpdateDto updateDto = ProductUpdateDto.builder()
+                .category("Electronics")
+                .name("Updated Galaxy Phone")
+                .description("Updated description")
+                .price(799.99f)
+                .build();
 
-    verify(productService, never()).createProduct(any(ProductUpdateDto.class));
-  }
+        mockMvc.perform(put("/api/v1/admin/products/{id}", savedProduct.getProductUuid())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Updated Galaxy Phone"))
+                .andExpect(jsonPath("$.price").value(799.99));
 
-  @Test
-  @DisplayName("Should return bad request when price is zero")
-  void createProduct_ShouldReturnBadRequest_WhenPriceIsZero() throws Exception {
-    ProductUpdateDto invalidDto =
-        ProductUpdateDto.builder()
-            .category("Electronics")
-            .name("Galaxy Phone")
-            .description("Advanced smartphone")
-            .price(0.0f)
-            .build();
+        ProductEntity updatedProduct = productRepository.findByNaturalId(savedProduct.getProductUuid()).get();
+        assertEquals("Updated Galaxy Phone", updatedProduct.getName());
+        assertEquals(BigDecimal.valueOf(799.99), updatedProduct.getPrice());
+    }
 
-    mockMvc
-        .perform(
-            post("/api/v1/admin/products")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(invalidDto)))
-        .andExpect(status().isBadRequest());
+    @Test
+    @SneakyThrows
+    void updateProduct_WithNonExistingId_ShouldReturnNotFound() {
+        UUID nonExistingId = UUID.randomUUID();
+        ProductUpdateDto updateDto = ProductUpdateDto.builder()
+                .category("Electronics")
+                .name("Updated Product")
+                .description("Updated description")
+                .price(100.0f)
+                .build();
 
-    verify(productService, never()).createProduct(any(ProductUpdateDto.class));
-  }
+        mockMvc.perform(put("/api/v1/admin/products/{id}", nonExistingId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateDto)))
+                .andExpect(status().isNotFound());
+    }
 
-  @Test
-  @DisplayName("Should return bad request when price is negative")
-  void createProduct_ShouldReturnBadRequest_WhenPriceIsNegative() throws Exception {
-    ProductUpdateDto invalidDto =
-        ProductUpdateDto.builder()
-            .category("Electronics")
-            .name("Galaxy Phone")
-            .description("Advanced smartphone")
-            .price(-10.0f)
-            .build();
+    @Test
+    @SneakyThrows
+    void updateProduct_WithDuplicateName_ShouldReturnConflict() {
+        ProductEntity product1 = ProductEntity.builder()
+                .productUuid(UUID.randomUUID())
+                .category(testCategory)
+                .name("First Product")
+                .description("First product description")
+                .price(BigDecimal.valueOf(100.0))
+                .build();
+        ProductEntity product2 = ProductEntity.builder()
+                .productUuid(UUID.randomUUID())
+                .category(testCategory)
+                .name("Second Product")
+                .description("Second product description")
+                .price(BigDecimal.valueOf(200.0))
+                .build();
+        productRepository.save(product1);
+        ProductEntity savedProduct2 = productRepository.save(product2);
 
-    mockMvc
-        .perform(
-            post("/api/v1/admin/products")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(invalidDto)))
-        .andExpect(status().isBadRequest());
+        ProductUpdateDto updateDto = ProductUpdateDto.builder()
+                .category("Electronics")
+                .name("First Product")
+                .description("Updated description")
+                .price(150.0f)
+                .build();
 
-    verify(productService, never()).createProduct(any(ProductUpdateDto.class));
-  }
+        mockMvc.perform(put("/api/v1/admin/products/{id}", savedProduct2.getProductUuid())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateDto)))
+                .andExpect(status().isConflict());
+    }
 
-  @Test
-  @DisplayName("Should return bad request when name exceeds max length")
-  void createProduct_ShouldReturnBadRequest_WhenNameExceedsMaxLength() throws Exception {
-    String longName = "A".repeat(101);
-    ProductUpdateDto invalidDto =
-        ProductUpdateDto.builder()
-            .category("Electronics")
-            .name(longName)
-            .description("Advanced smartphone")
-            .price(999.99f)
-            .build();
+    @Test
+    @SneakyThrows
+    void deleteProduct_WithExistingId_ShouldDeleteProduct() {
+        ProductEntity product = ProductEntity.builder()
+                .productUuid(UUID.randomUUID())
+                .category(testCategory)
+                .name("Product To Delete")
+                .description("Product description")
+                .price(BigDecimal.valueOf(300.0))
+                .build();
+        ProductEntity savedProduct = productRepository.save(product);
 
-    mockMvc
-        .perform(
-            post("/api/v1/admin/products")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(invalidDto)))
-        .andExpect(status().isBadRequest());
+        mockMvc.perform(delete("/api/v1/admin/products/{id}", savedProduct.getProductUuid()))
+                .andExpect(status().isNoContent());
 
-    verify(productService, never()).createProduct(any(ProductUpdateDto.class));
-  }
+        assertFalse(productRepository.findByNaturalId(savedProduct.getProductUuid()).isPresent());
+    }
 
-  @Test
-  @DisplayName("Should return bad request when description exceeds max length")
-  void createProduct_ShouldReturnBadRequest_WhenDescriptionExceedsMaxLength() throws Exception {
-    String longDescription = "A".repeat(1001);
-    ProductUpdateDto invalidDto =
-        ProductUpdateDto.builder()
-            .category("Electronics")
-            .name("Galaxy Phone")
-            .description(longDescription)
-            .price(999.99f)
-            .build();
+    @Test
+    @SneakyThrows
+    void deleteProduct_WithNonExistingId_ShouldReturnNotFound() {
+        UUID nonExistingId = UUID.randomUUID();
 
-    mockMvc
-        .perform(
-            post("/api/v1/admin/products")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(invalidDto)))
-        .andExpect(status().isBadRequest());
-
-    verify(productService, never()).createProduct(any(ProductUpdateDto.class));
-  }
-
-  @Test
-  @DisplayName("Should return bad request when missing cosmic word")
-  void createProduct_ShouldReturnBadRequest_WhenMissingCosmicWord() throws Exception {
-    ProductUpdateDto invalidDto =
-        ProductUpdateDto.builder()
-            .category("Electronics")
-            .name("Regular Phone")
-            .description("Regular smartphone")
-            .price(999.99f)
-            .build();
-
-    mockMvc
-        .perform(
-            post("/api/v1/admin/products")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(invalidDto)))
-        .andExpect(status().isBadRequest());
-
-    verify(productService, never()).createProduct(any(ProductUpdateDto.class));
-  }
-
-  @Test
-  @DisplayName("Should return conflict when product already exists")
-  void createProduct_ShouldReturnConflict_WhenProductAlreadyExists() throws Exception {
-    ProductUpdateDto createDto =
-        ProductUpdateDto.builder()
-            .category("Electronics")
-            .name("Galaxy Phone")
-            .description("Advanced smartphone")
-            .price(999.99f)
-            .build();
-
-    when(productService.createProduct(any(ProductUpdateDto.class)))
-        .thenThrow(new ProductAlreadyExistsException("Galaxy Phone"));
-
-    mockMvc
-        .perform(
-            post("/api/v1/admin/products")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(createDto)))
-        .andExpect(status().isConflict())
-        .andExpect(jsonPath("$.title").value("Product Already Exists"));
-
-    verify(productService).createProduct(any(ProductUpdateDto.class));
-  }
-
-  @Test
-  @DisplayName("Should return not found when updating non-existent product")
-  void updateProduct_ShouldReturnNotFound_WhenProductNotFound() throws Exception {
-    ProductUpdateDto updateDto =
-        ProductUpdateDto.builder()
-            .category("Electronics")
-            .name("Updated Galaxy Phone")
-            .description("Updated description")
-            .price(899.99f)
-            .build();
-
-    when(productService.updateProduct(eq(productId), any(ProductUpdateDto.class)))
-        .thenThrow(new ProductNotFoundException(productId));
-
-    mockMvc
-        .perform(
-            put("/api/v1/admin/products/{id}", productId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(updateDto)))
-        .andExpect(status().isNotFound())
-        .andExpect(jsonPath("$.title").value("Product Not Found"));
-
-    verify(productService).updateProduct(eq(productId), any(ProductUpdateDto.class));
-  }
-
-  @Test
-  @DisplayName("Should return conflict when product name already exists during update")
-  void updateProduct_ShouldReturnConflict_WhenProductNameAlreadyExists() throws Exception {
-    ProductUpdateDto updateDto =
-        ProductUpdateDto.builder()
-            .category("Electronics")
-            .name("Existing Galaxy Product")
-            .description("Updated description")
-            .price(899.99f)
-            .build();
-
-    when(productService.updateProduct(eq(productId), any(ProductUpdateDto.class)))
-        .thenThrow(new ProductAlreadyExistsException("Existing Galaxy Product"));
-
-    mockMvc
-        .perform(
-            put("/api/v1/admin/products/{id}", productId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(updateDto)))
-        .andExpect(status().isConflict())
-        .andExpect(jsonPath("$.title").value("Product Already Exists"));
-
-    verify(productService).updateProduct(eq(productId), any(ProductUpdateDto.class));
-  }
+        mockMvc.perform(delete("/api/v1/admin/products/{id}", nonExistingId))
+                .andExpect(status().isNotFound());
+    }
 }
