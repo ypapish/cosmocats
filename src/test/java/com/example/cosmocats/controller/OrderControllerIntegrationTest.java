@@ -30,15 +30,20 @@ import org.springframework.test.web.servlet.MockMvc;
 @AutoConfigureMockMvc
 class OrderControllerIntegrationTest extends AbstractIt {
 
-  @Autowired private MockMvc mockMvc;
+  @Autowired
+  private MockMvc mockMvc;
 
-  @Autowired private OrderRepository orderRepository;
+  @Autowired
+  private OrderRepository orderRepository;
 
-  @Autowired private ProductRepository productRepository;
+  @Autowired
+  private ProductRepository productRepository;
 
-  @Autowired private CategoryRepository categoryRepository;
+  @Autowired
+  private CategoryRepository categoryRepository;
 
-  @Autowired private ObjectMapper objectMapper;
+  @Autowired
+  private ObjectMapper objectMapper;
 
   private CategoryEntity testCategory;
   private ProductEntity testProduct1;

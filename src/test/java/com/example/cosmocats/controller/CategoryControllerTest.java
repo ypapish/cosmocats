@@ -22,11 +22,14 @@ import org.springframework.test.web.servlet.MockMvc;
 @WebMvcTest(CategoryController.class)
 class CategoryControllerTest {
 
-  @Autowired private MockMvc mockMvc;
+  @Autowired
+  private MockMvc mockMvc;
 
-  @MockBean private CategoryService categoryService;
+  @MockBean
+  private CategoryService categoryService;
 
-  @Autowired private ObjectMapper objectMapper;
+  @Autowired
+  private ObjectMapper objectMapper;
 
   private CategoryDto testCategoryDto;
   private UUID categoryId;

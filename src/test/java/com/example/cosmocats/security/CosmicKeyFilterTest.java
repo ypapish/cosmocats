@@ -23,11 +23,14 @@ import org.springframework.security.core.context.SecurityContextHolder;
 @ExtendWith(MockitoExtension.class)
 class CosmicKeyFilterTest {
 
-  @Mock private HttpServletRequest mockRequest;
+  @Mock
+  private HttpServletRequest mockRequest;
 
-  @Mock private HttpServletResponse mockResponse;
+  @Mock
+  private HttpServletResponse mockResponse;
 
-  @Mock private FilterChain mockFilterChain;
+  @Mock
+  private FilterChain mockFilterChain;
 
   private CosmicKeyFilter filter;
   private Method doFilterInternalMethod;

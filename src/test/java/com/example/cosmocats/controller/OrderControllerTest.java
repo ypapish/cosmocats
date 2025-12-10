@@ -24,11 +24,14 @@ import org.springframework.test.web.servlet.MockMvc;
 @WebMvcTest(OrderController.class)
 class OrderControllerTest {
 
-  @Autowired private MockMvc mockMvc;
+  @Autowired
+  private MockMvc mockMvc;
 
-  @MockBean private OrderService orderService;
+  @MockBean
+  private OrderService orderService;
 
-  @Autowired private ObjectMapper objectMapper;
+  @Autowired
+  private ObjectMapper objectMapper;
 
   private OrderDto testOrderDto;
   private UUID orderId;
