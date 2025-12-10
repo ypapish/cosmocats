@@ -10,7 +10,7 @@ import lombok.Builder;
 import lombok.Value;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class ProductDto {
   @NotNull(message = "ProductId is required")
   UUID productId;
