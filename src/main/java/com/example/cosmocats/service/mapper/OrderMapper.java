@@ -10,20 +10,19 @@ import org.mapstruct.Mapping;
 
 @Mapper(
     componentModel = "spring",
-    uses = {ProductMapper.class}
-)
+    uses = {ProductMapper.class})
 public interface OrderMapper {
 
-    @Mapping(target = "id", source = "orderUuid")
-    @Mapping(target = "entries", source = "entries")
-    @Mapping(target = "totalPrice", expression = "java(order.getTotalPrice().doubleValue())")
-    OrderDto toOrderDto(OrderEntity order);
+  @Mapping(target = "id", source = "orderUuid")
+  @Mapping(target = "entries", source = "entries")
+  @Mapping(target = "totalPrice", expression = "java(order.getTotalPrice().doubleValue())")
+  OrderDto toOrderDto(OrderEntity order);
 
-    List<OrderDto> toOrderDtoList(List<OrderEntity> orders);
+  List<OrderDto> toOrderDtoList(List<OrderEntity> orders);
 
-    @Mapping(target = "product", source = "product")
-    @Mapping(target = "amount", source = "amount")
-    OrderEntryDto toOrderEntryDto(OrderEntryEntity orderEntry);
+  @Mapping(target = "product", source = "product")
+  @Mapping(target = "amount", source = "amount")
+  OrderEntryDto toOrderEntryDto(OrderEntryEntity orderEntry);
 
-    List<OrderEntryDto> toOrderEntryDtoList(List<OrderEntryEntity> orderEntries);
+  List<OrderEntryDto> toOrderEntryDtoList(List<OrderEntryEntity> orderEntries);
 }

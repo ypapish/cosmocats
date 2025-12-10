@@ -14,11 +14,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class CosmoCatServiceTest {
 
-  @Mock
-  private FeatureToggleService featureToggleService;
+  @Mock private FeatureToggleService featureToggleService;
 
-  @InjectMocks
-  private CosmoCatService cosmoCatService;
+  @InjectMocks private CosmoCatService cosmoCatService;
 
   @Test
   void getAllCatsInfos_whenFeatureEnabled_shouldReturnCats() {

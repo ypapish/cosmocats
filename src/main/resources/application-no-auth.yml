@@ -7,7 +7,7 @@ spring:
 auth:
   claims:
     sub: test-user
-    roles: [ADMIN, USER]
+    roles: [ ADMIN, USER ]
     preferred_username: test-admin
 
 application:

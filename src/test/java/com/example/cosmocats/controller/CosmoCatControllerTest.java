@@ -30,14 +30,11 @@ import org.springframework.test.web.servlet.MockMvc;
 @ExtendWith({SpringExtension.class, FeatureToggleExtension.class})
 class CosmoCatControllerTest {
 
-  @Autowired
-  private MockMvc mockMvc;
+  @Autowired private MockMvc mockMvc;
 
-  @Autowired
-  private CosmoCatService cosmoCatService;
+  @Autowired private CosmoCatService cosmoCatService;
 
-  @Autowired
-  private CatInfoMapper catInfoMapper;
+  @Autowired private CatInfoMapper catInfoMapper;
 
   @Test
   @EnabledFeatureToggle(FeatureToggles.COSMO_CATS)

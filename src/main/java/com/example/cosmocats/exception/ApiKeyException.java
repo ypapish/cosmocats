@@ -5,8 +5,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(HttpStatus.UNAUTHORIZED)
 public class ApiKeyException extends RuntimeException {
-    
-    public ApiKeyException(String message) {
-        super(message);
-    }
+
+  public ApiKeyException(String message) {
+    super(message);
+  }
 }

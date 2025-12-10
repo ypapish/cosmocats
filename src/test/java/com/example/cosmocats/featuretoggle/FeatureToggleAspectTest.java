@@ -17,8 +17,7 @@ import org.springframework.aop.aspectj.annotation.AspectJProxyFactory;
 @ExtendWith(MockitoExtension.class)
 class FeatureToggleAspectTest {
 
-  @Mock
-  private FeatureToggleService featureToggleService;
+  @Mock private FeatureToggleService featureToggleService;
 
   private FeatureToggleAspect featureToggleAspect;
   private TestService testServiceProxy;
