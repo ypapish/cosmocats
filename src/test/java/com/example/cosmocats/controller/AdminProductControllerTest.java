@@ -24,11 +24,14 @@ import org.springframework.test.web.servlet.MockMvc;
 @WebMvcTest(AdminProductController.class)
 class AdminProductControllerTest {
 
-  @Autowired private MockMvc mockMvc;
+  @Autowired 
+  private MockMvc mockMvc;
 
-  @MockBean private ProductService productService;
+  @MockBean 
+  private ProductService productService;
 
-  @Autowired private ObjectMapper objectMapper;
+  @Autowired 
+  private ObjectMapper objectMapper;
 
   private ProductDto testProductDto;
   private ProductUpdateDto testProductUpdateDto;
