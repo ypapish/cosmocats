@@ -2,13 +2,8 @@ package com.example.cosmocats.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -32,14 +27,14 @@ import org.springframework.test.web.servlet.MockMvc;
 class AdminProductControllerTest {
 
   private final UUID productId = UUID.fromString("550e8400-e29b-41d4-a716-446655440001");
-  
-  @Autowired 
+
+  @Autowired
   private MockMvc mockMvc;
 
-  @Autowired 
+  @Autowired
   private ObjectMapper objectMapper;
-  
-  @MockitoBean 
+
+  @MockitoBean
   private ProductService productService;
 
   @Test

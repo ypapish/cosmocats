@@ -1,5 +1,6 @@
 package com.example.cosmocats.exception;
 
+import com.example.cosmocats.featuretoggle.exception.FeatureNotAvailableException;
 import java.time.LocalDateTime;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -51,6 +52,17 @@ public class GlobalExceptionHandler {
     problemDetail.setProperty("timestamp", LocalDateTime.now());
 
     log.error("Internal server error: {}", ex.getMessage(), ex);
+    return problemDetail;
+  }
+
+  @ExceptionHandler(FeatureNotAvailableException.class)
+  public ProblemDetail handleFeatureNotAvailable(FeatureNotAvailableException ex) {
+    ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.SERVICE_UNAVAILABLE);
+    problemDetail.setTitle("Feature Not Available");
+    problemDetail.setDetail(ex.getMessage());
+    problemDetail.setProperty("timestamp", LocalDateTime.now());
+
+    log.info("Feature not available: {}", ex.getMessage());
     return problemDetail;
   }
 }

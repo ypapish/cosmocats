@@ -24,8 +24,12 @@ import org.springframework.test.web.servlet.MockMvc;
 class ProductControllerTest {
 
   private final UUID productId = UUID.fromString("550e8400-e29b-41d4-a716-446655440001");
-  @Autowired private MockMvc mockMvc;
-  @MockitoBean private ProductService productService;
+
+  @Autowired
+  private MockMvc mockMvc;
+
+  @MockitoBean
+  private ProductService productService;
 
   @Test
   @DisplayName("Should return all products when products exist")

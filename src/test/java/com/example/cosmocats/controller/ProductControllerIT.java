@@ -19,7 +19,8 @@ import org.springframework.test.web.servlet.MockMvc;
 @Tag("product-service")
 class ProductControllerIT extends AbstractIt {
 
-  @Autowired private MockMvc mockMvc;
+  @Autowired
+  private MockMvc mockMvc;
 
   @Test
   @DisplayName("Should get product by ID successfully")

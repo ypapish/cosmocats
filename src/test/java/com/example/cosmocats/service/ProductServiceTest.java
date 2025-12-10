@@ -3,13 +3,8 @@ package com.example.cosmocats.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 import com.example.cosmocats.domain.Product;
 import com.example.cosmocats.dto.product.ProductDto;
@@ -19,9 +14,7 @@ import com.example.cosmocats.exception.ProductAlreadyExistsException;
 import com.example.cosmocats.exception.ProductNotFoundException;
 import com.example.cosmocats.repository.ProductRepository;
 import com.example.cosmocats.service.mapper.ProductMapper;
-
 import java.util.*;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -34,14 +27,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @DisplayName("Product Service Tests")
 class ProductServiceTest {
 
-  @Mock private 
-  ProductRepository productRepository;
+  @Mock
+  private ProductRepository productRepository;
 
-  @Mock private 
-  ProductMapper productMapper;
+  @Mock
+  private ProductMapper productMapper;
 
-  @InjectMocks private 
-  ProductService productService;
+  @InjectMocks
+  private ProductService productService;
 
   private UUID productId;
   private Product product;
