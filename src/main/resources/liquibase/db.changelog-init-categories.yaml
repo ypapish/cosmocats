@@ -1,0 +1,51 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-sequence-category-id-seq
+      author: yana
+      changes:
+        - createSequence:
+            sequenceName: category_id_seq
+            startValue: 1
+            incrementBy: 50
+
+  - changeSet:
+      id: create-table-category
+      author: yana
+      changes:
+        - createTable:
+            tableName: category
+            columns:
+              - column:
+                  name: category_id
+                  type: BIGINT
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: category_uuid
+                  type: UUID
+                  constraints:
+                    nullable: false
+                  defaultValueComputed: gen_random_uuid()
+
+        - addUniqueConstraint:
+            tableName: category
+            columnNames: name
+            constraintName: uq_category_name
+
+        - addUniqueConstraint:
+            tableName: category
+            columnNames: category_uuid
+            constraintName: uq_category_uuid
+
+        - createIndex:
+            indexName: idx_category_name
+            tableName: category
+            columns:
+              - column:
+                  name: name

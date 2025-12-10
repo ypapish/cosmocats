@@ -16,8 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class FeatureToggleServiceTest {
 
-  @Mock
-  private FeatureToggleProperties featureToggleProperties;
+  @Mock private FeatureToggleProperties featureToggleProperties;
 
   private FeatureToggleService featureToggleService;
 
