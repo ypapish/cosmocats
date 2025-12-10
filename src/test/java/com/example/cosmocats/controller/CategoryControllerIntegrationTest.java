@@ -22,11 +22,14 @@ import org.springframework.test.web.servlet.MockMvc;
 @AutoConfigureMockMvc
 class CategoryControllerIntegrationTest extends AbstractIt {
 
-  @Autowired private MockMvc mockMvc;
+  @Autowired 
+  private MockMvc mockMvc;
 
-  @Autowired private CategoryRepository categoryRepository;
+  @Autowired 
+  private CategoryRepository categoryRepository;
 
-  @Autowired private ObjectMapper objectMapper;
+  @Autowired 
+  private ObjectMapper objectMapper;
 
   @BeforeEach
   void setUp() {
